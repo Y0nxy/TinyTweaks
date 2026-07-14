@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Project properties -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <AssemblyName>YonDev,TinyTweaks</AssemblyName>
+    <AssemblyTitle>TinyTweaks</AssemblyTitle>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+
+  <!-- ThunderPipe properties -->
+  <PropertyGroup>
+    <IsThunderstorePackable>true</IsThunderstorePackable>
+    <ThunderstoreName>TinyTweaks</ThunderstoreName>
+    <ThunderstoreDescription>TODO: Fill in short mod description at max 250 characters.</ThunderstoreDescription>
+    <!--
+      Communities and package categories metadata for publishing with ThunderPipe.
+      Communities: https://thunderstore.io/api/experimental/community/
+      Categories: https://thunderstore.io/api/experimental/community/peak/category/
+    -->
+    <ThunderstoreCommunities>peak</ThunderstoreCommunities>
+    <ThunderstoreCategories>mods</ThunderstoreCategories>
+  </PropertyGroup>
+
+  <!--
+    Define mod files to copy to the relative BepInEx directory after build
+    and where they are packed to when building a Thunderstore package
+  -->
+  <ItemGroup>
+    <ModFile Include="$(TargetPath)" Destination="plugins/" />
+  </ItemGroup>
+
+  <!-- Thunderstore package metadata -->
+  <ItemGroup>
+    <ThunderstorePackageFile Include="$(SolutionRoot)README.md" />
+    <ThunderstorePackageFile Include="$(SolutionRoot)CHANGELOG.md" />
+    <ThunderstorePackageFile Include="$(SolutionRoot)icon.png" />
+    <ThunderstorePackageFile Include="$(SolutionRoot)LICENSE" />
+
+    <ThunderstoreDependency Include="BepInEx-BepInExPack_PEAK" Version="5.4.75301" />
+  </ItemGroup>
+</Project>
