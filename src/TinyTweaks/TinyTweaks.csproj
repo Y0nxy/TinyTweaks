@@ -1,8 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <!-- Project properties -->
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <AssemblyName>YonDev,TinyTweaks</AssemblyName>
+    <AssemblyName>YonDev.TinyTweaks</AssemblyName>
     <AssemblyTitle>TinyTweaks</AssemblyTitle>
 	<Nullable>disable</Nullable>
     <Version>0.1.0</Version>
@@ -39,4 +39,7 @@
 
     <ThunderstoreDependency Include="BepInEx-BepInExPack_PEAK" Version="5.4.75301" />
   </ItemGroup>
+	<Target Name="CopyDllOnly" AfterTargets="Build">
+		<Copy SourceFiles="$(TargetDir)$(TargetName).dll" DestinationFolder="C:\Users\yonij\AppData\Roaming\com.kesomannen.gale\peak\profiles\modTesting\BepInEx\plugins\" SkipUnchangedFiles="true" />
+	</Target>
 </Project>

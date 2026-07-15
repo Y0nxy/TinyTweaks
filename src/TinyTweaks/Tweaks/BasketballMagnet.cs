@@ -1,18 +1,13 @@
 ﻿using System;
 using UnityEngine;
-using BepInEx.Configuration;
 using Photon.Pun;
-using pworld.Scripts;
-using TinyTweaks;
 
-namespace PEAKBending
+namespace TinyTweaks.Tweaks
 {
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(PhotonView))]
     public class BasketballMagnet : MonoBehaviour, IPunOwnershipCallbacks
     {
-
-
         private Rigidbody rb = null!;
         private PhotonView pv = null!;
         private BasketballHoop targetHoop;

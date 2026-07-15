@@ -1,12 +1,7 @@
 ﻿using BepInEx.Configuration;
 using HarmonyLib;
 using Photon.Pun;
-using SCPE;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
-using static UnityEngine.Rendering.STP;
 
 namespace TinyTweaks.Tweaks
 {
@@ -16,7 +11,7 @@ namespace TinyTweaks.Tweaks
         public static ConfigEntry<bool> enableBingBongPatch = null!;
         static ConfigFile config;
 
-        public static void Binds()
+        public static void Start()
         {
             config = Plugin.config;
             enableBingBongPatch = config.Bind("Actions!", "BingBong", true);

@@ -1,12 +1,9 @@
 ﻿using BepInEx.Configuration;
 using Photon.Pun;
-using pworld.Scripts;
 using System.Collections.Generic;
-using TinyTweaks;
 using UnityEngine;
-using static UnityEngine.Rendering.STP;
 
-namespace PEAKBending
+namespace TinyTweaks.Tweaks
 {
     public class ItemAimbotFinder : MonoBehaviour
     {
