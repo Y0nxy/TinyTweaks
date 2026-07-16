@@ -11,12 +11,7 @@ namespace TinyTweaks
 {
     /// <summary>
     /// TODO:
-    ///     NoobSash !=
-    ///     showNamesAlways
-    ///     dead+passed out eyes!=
-    ///     Basketball aimbot!=
-    ///     postfix drop all items that can't be dropped !=
-    ///     Bingbong Always same answer!=
+    ///     Extra Marshmallows
     /// </summary>
     [BepInAutoPlugin]
     public partial class Plugin : BaseUnityPlugin
@@ -50,6 +45,7 @@ namespace TinyTweaks
             Customizations.Start();
             BingBongSays.Start();
             showNamesAlways.Start();
+            ExtraMarshmallows.Start();
         }
         public static void Notification(string message, string color = "FFFFFF", bool sound = false)
         {
@@ -73,6 +69,10 @@ namespace TinyTweaks
             {
                 Log.LogMessage("AddMessage method not found.");
             }
+        }
+        public static void log(string message)
+        {
+            Log.LogInfo(message);
         }
     }
 }
