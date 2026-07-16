@@ -70,10 +70,6 @@ namespace TinyTweaks.Tweaks
                 }
             };
         }
-        public static void PatchAll(Harmony harmony)
-        {
-            harmony.CreateClassProcessor(typeof(NoobSashPatch)).Patch();
-        }
         [HarmonyPatch(typeof(CharacterData), "SetBadgeStatus")]
         public static class NoobSashPatch
         {

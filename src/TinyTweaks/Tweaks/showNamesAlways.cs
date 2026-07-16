@@ -36,6 +36,11 @@ namespace TinyTweaks.Tweaks
                     return true;
                 }
 
+                if (__instance.playerNamePos == null || __instance.mouth == null)
+                {
+                    return true; // Avoid crashing on uninitialized/destroyed targets
+                }
+
                 var visible = false;
                 var angle = Vector3.Angle(MainCamera.instance.transform.forward, __instance.transform.position - MainCamera.instance.transform.position);
 
@@ -43,13 +48,13 @@ namespace TinyTweaks.Tweaks
                 {
                     visible = true;
                 }
-
                 if (__instance.mouth.character.data.isBlind)
                 {
                     visible = DisplayWhenBlind.Value; //DisplayWhenBlind
                 }
 
                 var indexField = AccessTools.Field(typeof(IsLookedAt), "index");
+                if (indexField == null) return true;
                 var index = (int)indexField.GetValue(__instance);
                 GUIManager.instance.playerNames.UpdateName(index, __instance.playerNamePos.position, visible, __instance.mouth.amplitudeIndex);
                 return false;

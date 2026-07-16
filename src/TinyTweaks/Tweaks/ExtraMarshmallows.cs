@@ -1,18 +1,19 @@
 ﻿using BepInEx.Configuration;
 using HarmonyLib;
 using Photon.Pun;
-using Photon.Voice.Unity.UtilityScripts;
-using Sirenix.OdinInspector;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using UnityEngine;
 
 namespace TinyTweaks.Tweaks
 {
-    internal class ExtraMarshmallows
+    public class ExtraMarshmallows
     {
-        static Campfire nextCampfire;
-        static List<GameObject> marshmallows;
-        static float radius = 3f;
+        public static Campfire nextCampfire;
+        static List<GameObject> marshmallows = new List<GameObject>();
+        static List<PhotonView> charactersThatPickedUp = new List<PhotonView>();
+        static float radius = 2f;
         static ConfigEntry<float> hotdogPercent;
         static int playerCount => PhotonNetwork.CurrentRoom.PlayerCount;
         static Vector3 originPoint => nextCampfire.transform.position;
@@ -24,36 +25,83 @@ namespace TinyTweaks.Tweaks
         {
             hotdogPercent = Plugin.config.Bind("ExtraMarshmallows", "Hotdog spawn chance", 33f);
         }
-        [HarmonyPatch(typeof(Campfire), "Awake")]
-        [HarmonyPostfix]
-        private static void OnCampfireAwake(Campfire __instance)
+        [HarmonyPatch(typeof(MapHandler), "SpawnCampfireItems")]
+        private class SetCampfire
         {
-            if (!PhotonNetwork.IsMasterClient) return;
-            if (__instance.transform.parent.name.Contains("Wings")) return;//not real campfire
-            Plugin.log("OnCampfire Called for " + __instance.name);
-            nextCampfire = __instance;
-            RemoveOldMarshmallows();
-            RefreshMarshmallows();
+            [HarmonyPrefix]
+            public static bool Prefix(GameObject campfireRoot, bool skipMallows)
+            {
+                if (!PhotonNetwork.IsMasterClient) return true;
+                if (!campfireRoot || skipMallows) return true;
+                Plugin.log("Skipping Spawning campfire items for " + campfireRoot.gameObject.name);
+                marshmallows.Clear(); //leaving the old marshmallows be as is
+                marshmallowsTaken = 0;
+                charactersThatPickedUp.Clear();
+                nextCampfire = campfireRoot.GetComponentInChildren<Campfire>();
+                if (nextCampfire == null)
+                {
+                    Plugin.Log.LogError("Campfire Component not found in children");
+                    return true;
+                }
+                nextCampfire.gameObject.AddComponent<CampfireProtection>();
+                RefreshMarshmallows();
+                return false;
+            }
         }
-        [HarmonyPatch(typeof(PlayerConnectionLog), "OnPlayerEnteredRoom")]
-        [HarmonyPostfix]
-        private static void OnPlayerEnter()
+        [HarmonyPatch(typeof(PlayerConnectionLog))]
+        private class PlayerConnectionLogPatches
         {
-            if (!PhotonNetwork.IsMasterClient) return;
-            Plugin.log("Someone joined! Updated Marshmallows to:" + playerCount.ToString());
-            RefreshMarshmallows();
+            [HarmonyPatch("OnPlayerEnteredRoom")]
+            [HarmonyPostfix]
+            static void OnPlayerEnter()
+            {
+                if (!PhotonNetwork.IsMasterClient) return;
+                Plugin.log("Someone joined! Updated Marshmallows to:" + playerCount.ToString());
+                RefreshMarshmallows();
+            }
+            [HarmonyPatch("OnPlayerLeftRoom")]
+            [HarmonyPostfix]
+            private static void OnPlayerLeft()
+            {
+                if (!PhotonNetwork.IsMasterClient) return;
+                Plugin.log("Someone left! Updated Marshmallows to:" + playerCount.ToString());
+                RefreshMarshmallows();
+            }
+        }
+        [HarmonyPatch(typeof(Item))]
+        private class MarshmallowProtection
+        {
+            [HarmonyPatch("RequestPickup")]
+            [HarmonyPrefix]
+            private static bool onRequestPickup(Item __instance, PhotonView characterView)
+            {
+                if (!PhotonNetwork.IsMasterClient) return true;
+                if (!marshmallows.Contains(__instance.gameObject)) return true;
+                if (charactersThatPickedUp.Contains(characterView))
+                {
+                    Plugin.log(characterView.name + " tried taking another Marshmallow! Unbelieveable...");
+                    __instance.view.RPC("DenyPickupRPC", characterView.Owner, Array.Empty<object>());
+                    return false;
+                }
+                charactersThatPickedUp.Add(characterView);
+                marshmallows.Remove(__instance.gameObject);
+                return true;
+            }
+            [HarmonyPatch("SetKinematicRPC")]
+            [HarmonyPostfix]
+            static void MarshmallowStandInPlace(Item __instance, bool value, Vector3 position, Quaternion rotation)
+            {
+                if (marshmallows.Contains(__instance.gameObject))
+                {
+                    if (!value)
+                        __instance.SetKinematicNetworked(true,__instance.transform.position, __instance.transform.rotation);
+                }
+            }
         }
 
-        [HarmonyPatch(typeof(PlayerConnectionLog), "OnPlayerLeftRoom")]
-        [HarmonyPostfix]
-        private static void OnPlayerLeft()
-        {
-            if (!PhotonNetwork.IsMasterClient) return;
-            Plugin.log("Someone left! Updated Marshmallows to:" + playerCount.ToString());
-            RefreshMarshmallows();
-        }
         static void RefreshMarshmallows()
         {
+            if (nextCampfire == null) return;
             Vector3 originPoint = nextCampfire.transform.position;
             foreach (GameObject obj in marshmallows)
             {
@@ -86,33 +134,27 @@ namespace TinyTweaks.Tweaks
 
             // Create the spawn position relative to the origin
             Vector3 spawnPosition = originPoint + new Vector3(x, 0, z);
+            spawnPosition.y = CastToFloor(spawnPosition);
             Vector3 directionToCenter = originPoint - spawnPosition;
 
             // We force Y to be 0 so they don't tilt up/down if your campfire is on a slope.
             directionToCenter.y = 0;
-            Quaternion lookRotation = Quaternion.LookRotation(directionToCenter);
+            Quaternion lookRotation = Quaternion.LookRotation(directionToCenter) * Quaternion.Euler(0, -90, 0);
             string itemToSpawn = "0_Items/Marshmallow";
-            if (Random.value <= hotdogPercent.Value / 100) itemToSpawn = "0_Items/Glizzy";
+            if (UnityEngine.Random.value <= hotdogPercent.Value / 100) itemToSpawn = "0_Items/Glizzy";
             GameObject itemObj = PhotonNetwork.InstantiateRoomObject(itemToSpawn, spawnPosition, lookRotation);
             var item = itemObj.GetComponent<Item>();
             if (item != null) item.SetKinematicNetworked(true);
             marshmallows.Add(itemObj);
         }
-        static void RemoveOldMarshmallows()
+        static float CastToFloor(Vector3 spawnPosition)
         {
-            marshmallows.Clear();
-            foreach (ItemCooking item in GameObject.FindObjectsByType<ItemCooking>(FindObjectsSortMode.None))
+            RaycastHit floorhit;
+            if (Physics.Raycast(spawnPosition + Vector3.up * 5, Vector3.down, out floorhit, 10f))
             {
-                var itemName = item.name;
-                if (itemName.Contains("Glizzy") || itemName.Contains("Marshmallow"))
-                {
-                    if (Vector3.Distance(originPoint, item.transform.position) < 20f) {
-                        if (!item.photonView.IsMine)
-                            item.photonView.RequestOwnership();
-                        PhotonNetwork.Destroy(item.gameObject);
-                    }
-                }
+                 return floorhit.point.y;
             }
+            return spawnPosition.y;
         }
     }
 }
