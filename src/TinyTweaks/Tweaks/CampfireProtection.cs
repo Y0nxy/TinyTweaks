@@ -10,7 +10,7 @@ namespace TinyTweaks.Tweaks
         Vector3 protectionPoint;
         //float radius = 30;
         float timeToCheck = 0;
-        float delayTime = 2; //every 2 seconds
+        float delayTime = 1; //every 2 seconds
         Dictionary<Character, float> playersAtCampfire = new Dictionary<Character,float>(); //float is hunger when reached
         Campfire campfire;
 
@@ -42,20 +42,24 @@ namespace TinyTweaks.Tweaks
         }
         void addCampfireEffect(CharacterAfflictions c, Campfire campfire)
         {
-            float currentHunger = c.GetCurrentStatus(Hunger);
-            if (currentHunger > playersAtCampfire[c.character])
+            if (PhotonNetwork.IsMasterClient)
             {
-                float hungerToRemove = currentHunger - playersAtCampfire[c.character];
-                if (PhotonNetwork.IsMasterClient)
-                {
-                    float[] statusData = new float[CharacterAfflictions.NumStatusTypes];
-                    statusData[(int)Hunger] = -hungerToRemove;
-                    float currentCold = c.GetCurrentStatus(Cold);
-                    if (currentCold > 0)
-                        statusData[(int)Cold] = -currentCold;
+                float[] statusData = new float[CharacterAfflictions.NumStatusTypes];
 
-                    c.photonView.RPC("RPC_ApplyStatusesFromFloatArray", RpcTarget.All, new object[] { statusData });
-                }
+                //hunger
+                float currentHunger = c.GetCurrentStatus(Hunger);
+
+                //if hunger is lower than set, set it to that one
+                if (currentHunger < playersAtCampfire[c.character]) playersAtCampfire[c.character] = currentHunger;
+                float hungerToRemove = currentHunger - playersAtCampfire[c.character];
+                statusData[(int)Hunger] = -hungerToRemove;
+
+                //remove all cold
+                float currentCold = c.GetCurrentStatus(Cold);
+                if (currentCold > 0)
+                    statusData[(int)Cold] = -currentCold;
+
+                c.photonView.RPC("RPC_ApplyStatusesFromFloatArray", RpcTarget.All, new object[] { statusData });
             }
         }
     }

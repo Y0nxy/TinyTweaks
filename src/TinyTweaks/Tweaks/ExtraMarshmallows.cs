@@ -39,19 +39,24 @@ namespace TinyTweaks.Tweaks
             [HarmonyPrefix]
             public static bool Prefix(GameObject campfireRoot, bool skipMallows)
             {
-                if (!isMasterAndEnabled) return true;
                 if (!campfireRoot || skipMallows) return true;
+
+                nextCampfire = campfireRoot.GetComponentInChildren<Campfire>();
+                if (nextCampfire == null)
+                {
+                    Plugin.Log.LogError("Campfire Component not found");
+                    return true;
+                }
+                if (enableCampfireProtection.Value)
+                    nextCampfire.gameObject.AddComponent<CampfireProtection>();
+                if (!isMasterAndEnabled)
+                {
+                    return true;
+                }
                 Plugin.log("Skipping Spawning campfire items for " + campfireRoot.gameObject.name);
                 marshmallows.Clear(); //leaving the old marshmallows be as is
                 marshmallowsTaken = 0;
                 charactersThatPickedUp.Clear();
-                nextCampfire = campfireRoot.GetComponentInChildren<Campfire>();
-                if (nextCampfire == null)
-                {
-                    Plugin.Log.LogError("Campfire Component not found in children");
-                    return true;
-                }
-                nextCampfire.gameObject.AddComponent<CampfireProtection>();
                 RefreshMarshmallows();
                 return false;
             }
