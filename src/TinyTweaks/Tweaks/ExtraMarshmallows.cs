@@ -31,7 +31,7 @@ namespace TinyTweaks.Tweaks
         {
             enableExtraMarshmallows = Plugin.config.Bind("Campfire", "Extra Marshmallows", true);
             enableCampfireProtection = Plugin.config.Bind("Campfire", "Campfire Protection", true);
-            hotdogPercent = Plugin.config.Bind("Campfire", "Hotdog spawn chance", 33f);
+            hotdogPercent = Plugin.config.Bind("Campfire", "Hotdog spawn chance", 33f, new ConfigDescription("from 0 to 100%", new AcceptableValueRange<float>(0f, 100f)));
         }
         [HarmonyPatch(typeof(MapHandler), "SpawnCampfireItems")]
         private class SetCampfire

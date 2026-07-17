@@ -14,7 +14,7 @@ namespace TinyTweaks.Tweaks
         public static void Start()
         {
             var config = Plugin.config;
-            NoobSash = config.Bind("Customization", "Noob Sash", true, "Toggle the Noob Sash (hides badges) on/off.");
+            NoobSash = config.Bind("Customization", "Noob Sash", false, "Toggle the Noob Sash (hides badges) on/off.");
             DeadEyes = config.Bind("Customization", "Dead Eyes", false, "Toggle the Dead Eyes on/off.");
             passedOutEyes = config.Bind("Customization", "Passed Out Eyes", false, "Toggle the Passed Out Eyes on/off.");
             NormalEyes = config.Bind("Customization", "Normal Eyes", false, "Toggle the Normal Eyes on/off.");
