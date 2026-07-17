@@ -1,8 +1,7 @@
-﻿using System;
+﻿using Photon.Pun;
 using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
-using UnityEngine.Rendering.Universal;
+using static CharacterAfflictions.STATUSTYPE;
 
 namespace TinyTweaks.Tweaks
 {
@@ -12,7 +11,7 @@ namespace TinyTweaks.Tweaks
         //float radius = 30;
         float timeToCheck = 0;
         float delayTime = 2; //every 2 seconds
-        //Dictionary<Character, float> playersAtCampfire = new Dictionary<Character,float>();
+        Dictionary<Character, float> playersAtCampfire = new Dictionary<Character,float>(); //float is hunger when reached
         Campfire campfire;
 
         void Awake(){
@@ -29,14 +28,33 @@ namespace TinyTweaks.Tweaks
                 if (c.data.dead) continue;
                 if (Vector3.Distance(protectionPoint, c.Center) < campfire.moraleBoostRadius)
                 {
-                    CharacterAfflictions aff = c.refs.afflictions;
-                    if (aff.canGetHungry) aff.AddAffliction(Campfire.s_CampfireBuff, !c.IsLocal);
-                    if (Time.time - campfire._timebuffLastApplied >= 2f)
+                    if (playersAtCampfire.ContainsKey(c))
                     {
-                        campfire._timebuffLastApplied = Time.time;
-                        aff.AddAffliction(Campfire.s_CampfireBuff, !c.IsLocal);
+                        addCampfireEffect(c.refs.afflictions, campfire);
                     }
-                    //playersAtCampfire.Add(c);
+                    else
+                    {
+                        float currentHunger = c.refs.afflictions.GetCurrentStatus(Hunger);
+                        playersAtCampfire.Add(c, currentHunger);
+                    }
+                }
+            }
+        }
+        void addCampfireEffect(CharacterAfflictions c, Campfire campfire)
+        {
+            float currentHunger = c.GetCurrentStatus(Hunger);
+            if (currentHunger > playersAtCampfire[c.character])
+            {
+                float hungerToRemove = currentHunger - playersAtCampfire[c.character];
+                if (PhotonNetwork.IsMasterClient)
+                {
+                    float[] statusData = new float[CharacterAfflictions.NumStatusTypes];
+                    statusData[(int)Hunger] = -hungerToRemove;
+                    float currentCold = c.GetCurrentStatus(Cold);
+                    if (currentCold > 0)
+                        statusData[(int)Cold] = -currentCold;
+
+                    c.photonView.RPC("RPC_ApplyStatusesFromFloatArray", RpcTarget.All, new object[] { statusData });
                 }
             }
         }

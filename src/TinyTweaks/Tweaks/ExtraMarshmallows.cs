@@ -10,20 +10,28 @@ namespace TinyTweaks.Tweaks
 {
     public class ExtraMarshmallows
     {
+        //Configs
+        static ConfigEntry<bool> enableExtraMarshmallows;
+        static ConfigEntry<bool> enableCampfireProtection;
+        static ConfigEntry<float> hotdogPercent;
+
+        //other stuff
         public static Campfire nextCampfire;
         static List<GameObject> marshmallows = new List<GameObject>();
         static List<PhotonView> charactersThatPickedUp = new List<PhotonView>();
         static float radius = 2f;
-        static ConfigEntry<float> hotdogPercent;
         static int playerCount => PhotonNetwork.CurrentRoom.PlayerCount;
         static Vector3 originPoint => nextCampfire.transform.position;
         static int marshmallowsTaken = 0;
+        static bool isMasterAndEnabled => PhotonNetwork.IsMasterClient && enableExtraMarshmallows.Value;
 
         //Awake from every Campfire
         //Taken = 0 on any new campfire
         public static void Start()
         {
-            hotdogPercent = Plugin.config.Bind("ExtraMarshmallows", "Hotdog spawn chance", 33f);
+            enableExtraMarshmallows = Plugin.config.Bind("Campfire", "Extra Marshmallows", true);
+            enableCampfireProtection = Plugin.config.Bind("Campfire", "Campfire Protection", true);
+            hotdogPercent = Plugin.config.Bind("Campfire", "Hotdog spawn chance", 33f);
         }
         [HarmonyPatch(typeof(MapHandler), "SpawnCampfireItems")]
         private class SetCampfire
@@ -31,7 +39,7 @@ namespace TinyTweaks.Tweaks
             [HarmonyPrefix]
             public static bool Prefix(GameObject campfireRoot, bool skipMallows)
             {
-                if (!PhotonNetwork.IsMasterClient) return true;
+                if (!isMasterAndEnabled) return true;
                 if (!campfireRoot || skipMallows) return true;
                 Plugin.log("Skipping Spawning campfire items for " + campfireRoot.gameObject.name);
                 marshmallows.Clear(); //leaving the old marshmallows be as is
@@ -55,7 +63,7 @@ namespace TinyTweaks.Tweaks
             [HarmonyPostfix]
             static void OnPlayerEnter()
             {
-                if (!PhotonNetwork.IsMasterClient) return;
+                if (!isMasterAndEnabled) return;
                 Plugin.log("Someone joined! Updated Marshmallows to:" + playerCount.ToString());
                 RefreshMarshmallows();
             }
@@ -63,7 +71,7 @@ namespace TinyTweaks.Tweaks
             [HarmonyPostfix]
             private static void OnPlayerLeft()
             {
-                if (!PhotonNetwork.IsMasterClient) return;
+                if (!isMasterAndEnabled) return;
                 Plugin.log("Someone left! Updated Marshmallows to:" + playerCount.ToString());
                 RefreshMarshmallows();
             }
@@ -75,7 +83,7 @@ namespace TinyTweaks.Tweaks
             [HarmonyPrefix]
             private static bool onRequestPickup(Item __instance, PhotonView characterView)
             {
-                if (!PhotonNetwork.IsMasterClient) return true;
+                if (!PhotonNetwork.IsMasterClient|| !enableExtraMarshmallows.Value) return true;
                 if (!marshmallows.Contains(__instance.gameObject)) return true;
                 if (charactersThatPickedUp.Contains(characterView))
                 {
@@ -91,6 +99,7 @@ namespace TinyTweaks.Tweaks
             [HarmonyPostfix]
             static void MarshmallowStandInPlace(Item __instance, bool value, Vector3 position, Quaternion rotation)
             {
+                if (!isMasterAndEnabled) return;
                 if (marshmallows.Contains(__instance.gameObject))
                 {
                     if (!value)
