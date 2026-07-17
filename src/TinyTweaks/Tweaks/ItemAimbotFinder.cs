@@ -12,7 +12,7 @@ namespace TinyTweaks.Tweaks
 
         private float nextScanTime;
         private HashSet<int> pendingRequests = new HashSet<int>();
-        ConfigEntry<string> Basketball = null!;
+        static ConfigEntry<string> Basketball = null!;
 
         // --- CONFIGURATION MANAGEMENT ---
         public static ConfigEntry<bool> EnableAssist { get; private set; } = null!;
@@ -25,7 +25,7 @@ namespace TinyTweaks.Tweaks
 
 
 
-        void Awake()
+        public static void Binds()
         {
             var config = Plugin.config;
             EnableAssist = config.Bind("Basketball", "Enable Assist", true, "Master toggle for the assist system.");

@@ -33,12 +33,13 @@ namespace TinyTweaks
 
         void OnSceneChanged(Scene scene, LoadSceneMode mode)
         {
+            TweaksObj = new GameObject("Tweaks!");
             if (scene.name == "Airport")
             {
                 Log.LogInfo("In Airport! Loading Basketball Aimbot!");
-                TweaksObj = new GameObject("Tweaks!");
                 TweaksObj.AddComponent<ItemAimbotFinder>();
             }
+            TweaksObj.AddComponent<moveVersion>();
         }
         private void StartTweaks()
         {
@@ -46,6 +47,8 @@ namespace TinyTweaks
             BingBongSays.Start();
             showNamesAlways.Start();
             ExtraMarshmallows.Start();
+            ItemAimbotFinder.Binds();
+            moveVersion.Binds();
         }
         public static void Notification(string message, string color = "FFFFFF", bool sound = false)
         {
