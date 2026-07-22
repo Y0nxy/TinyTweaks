@@ -14,8 +14,8 @@ namespace TinyTweaks.Tweaks
         public static void Start()
         {
             config = Plugin.config;
-            enableBingBongPatch = config.Bind("BingBongSays", "BingBong", false);
-            bingBongAnswer = config.Bind("BingBongSays", "BingBongAnswer(rounded down)", 0f, new ConfigDescription("The answer to the Bing Bong action.",
+            enableBingBongPatch = config.Bind("Shorties", "BingBong", false);
+            bingBongAnswer = config.Bind("Shorties", "BingBongAnswer(rounded down)", 0f, new ConfigDescription("The answer to the Bing Bong action.",
                         new AcceptableValueRange<float>(0, 30)));
 
             bingBongAnswer.SettingChanged += (sender, e) =>

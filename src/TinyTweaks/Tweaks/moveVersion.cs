@@ -12,36 +12,47 @@ namespace TinyTweaks.Tweaks
     {
         static ConfigEntry<bool> hideVersionText;
         static ConfigEntry<bool> versionTextLeft;
-        static GameObject version;
-        static Vector3 previousPos;
+        GameObject version = null;
+        Vector3 previousPos;
+        float timeToCheck = 0;
 
         public static void Binds()
         {
             var config = Plugin.config;
-            hideVersionText = config.Bind("Version Label", "Hide Version", false);
-            versionTextLeft = config.Bind("Version Label", "Move Version left", true);
+            hideVersionText = config.Bind("Version", "Hide Version", false);
+            versionTextLeft = config.Bind("Version", "Move Version left", true);
+        }
 
+        void Start()
+        {
+            timeToCheck = Time.time + 3f;
+            version = null;
+            Plugin.log("Trying to find VersionString");
             hideVersionText.SettingChanged += (_, _) => CheckHiddenText();
             versionTextLeft.SettingChanged += (_, _) => CheckTextLeft();
         }
 
-        void Awake()
+        void Update()
         {
+            if (version != null || timeToCheck > Time.time) return;
+            timeToCheck = Time.time + 3f;
             var versionString = FindAnyObjectByType<VersionString>();
             if (versionString == null)
             {
-                Plugin.log("No VersionString in Scene"); 
-                Destroy(this);
+                Plugin.log("No VersionString in Scene");
+                //Destroy(this);
                 return;
             }
+            Plugin.log("VersionString found!");
             version = versionString.gameObject;
             previousPos = version.transform.localPosition;
             CheckHiddenText();
             CheckTextLeft();
-        }
 
-        static void CheckTextLeft()
+        }
+        void CheckTextLeft()
         {
+            if (version == null) return;
             TextMeshProUGUI tmpro = version.GetComponent<TextMeshProUGUI>();
             if (versionTextLeft.Value)
             {
@@ -56,8 +67,9 @@ namespace TinyTweaks.Tweaks
             tmpro.horizontalAlignment = HorizontalAlignmentOptions.Left;
             version.transform.localPosition = previousPos;
         }
-        static void CheckHiddenText()
+        void CheckHiddenText()
         {
+            if (version == null) return;
             if (hideVersionText.Value)
             {
                 version.SetActive(false);

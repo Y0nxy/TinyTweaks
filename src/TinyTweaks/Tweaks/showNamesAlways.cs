@@ -17,12 +17,12 @@ namespace TinyTweaks.Tweaks
         public static void Start()
         {
             var config = Plugin.config;
-            AlwaysShowNames = config.Bind("Tweaks", "Always Show Names", true);
+            AlwaysShowNames = config.Bind("Show Names Always", "Always Show Names", true);
             //min 0, max 360
-            VisibleAngle = config.Bind("Tweaks", "Visible Angle", 52f,
+            VisibleAngle = config.Bind("Show Names Always", "Visible Angle", 52f,
                 new ConfigDescription("Visible Angle up to 360 deg",
                 new AcceptableValueRange<float>(0f, 360f)));
-            DisplayWhenBlind = config.Bind("Tweaks", "Show When Blind", false);
+            DisplayWhenBlind = config.Bind("Show Names Always", "Show When Blind", false);
         }
         [HarmonyPatch(typeof(IsLookedAt))]
         public static class IsLookedAtPatches

@@ -19,14 +19,14 @@ namespace TinyTweaks
         internal static ManualLogSource Log { get; private set; } = null!;
         public static  ConfigFile config;
         GameObject TweaksObj;
-
+        Harmony harmony;
         private void Awake()
         {
             Log = Logger;
             config = this.Config;
             StartTweaks();
             SceneManager.sceneLoaded += OnSceneChanged;
-            Harmony harmony = new Harmony("TinyTweaks!");
+            harmony = new Harmony("TinyTweaks!");
             harmony.PatchAll();
             Log.LogInfo($"Plugin {Name} is loaded!");
         }
@@ -44,11 +44,12 @@ namespace TinyTweaks
         private void StartTweaks()
         {
             Customizations.Start();
-            BingBongSays.Start();
-            showNamesAlways.Start();
             ExtraMarshmallows.Start();
             ItemAimbotFinder.Binds();
+            showNamesAlways.Start();
             moveVersion.Binds();
+            BingBongSays.Start();
+            noBonusStaminaFromJumps.Start();
         }
         public static void Notification(string message, string color = "FFFFFF", bool sound = false)
         {
@@ -76,6 +77,15 @@ namespace TinyTweaks
         public static void log(string message)
         {
             Log.LogInfo(message);
+        }
+
+        void OnDestroy()
+        {
+            if (harmony != null)
+            {
+                harmony.UnpatchSelf();
+                log("Unloading mod " + Name);
+            }
         }
     }
 }

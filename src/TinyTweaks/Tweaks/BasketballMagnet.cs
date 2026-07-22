@@ -13,6 +13,7 @@ namespace TinyTweaks.Tweaks
         private BasketballHoop targetHoop;
         private bool hasLeftHand;
         private bool hasExecutedLegitShot;
+        private float lastForceTime = -1f;
 
         private void Awake()
         {
@@ -36,6 +37,7 @@ namespace TinyTweaks.Tweaks
         {
             hasLeftHand = false;
             hasExecutedLegitShot = false;
+            lastForceTime = -1f;
         }
 
         private void FindNearestHoop()
@@ -107,6 +109,17 @@ namespace TinyTweaks.Tweaks
                 }
             }
         }
+        private void Update()
+        {
+            if (pv.IsMine && lastForceTime > 0f)
+            {
+                if (Time.time - lastForceTime >= 3.5f)
+                {
+                    ReturnOwnershipToMaster();
+                    lastForceTime = -1f;
+                }
+            }
+        }
 
         private void ApplyParabolicAimbotForce()
         {
@@ -140,6 +153,7 @@ namespace TinyTweaks.Tweaks
             {
                 Vector3 fallbackDir = (targetPos - startPos).normalized;
                 rb.linearVelocity = fallbackDir * 15f;
+                lastForceTime = Time.time;
                 return;
             }
 
@@ -160,8 +174,18 @@ namespace TinyTweaks.Tweaks
             rb.angularVelocity = Vector3.zero;
 
             rb.AddForce(targetVelocity, ForceMode.VelocityChange);
+
+            lastForceTime = Time.time;
         }
 
+        private void ReturnOwnershipToMaster()
+        {
+            if (PhotonNetwork.IsConnected && PhotonNetwork.MasterClient != null && pv.Owner != PhotonNetwork.MasterClient)
+            {
+                pv.TransferOwnership(PhotonNetwork.MasterClient);
+                Plugin.Log.LogInfo("[BasketballMagnet] Inactivity timeout (3.5s). Transferred ownership back to Master Client.");
+            }
+        }
         private void SpawnDebugMarker(Vector3 position)
         {
             try
