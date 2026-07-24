@@ -11,7 +11,7 @@ namespace TinyTweaks.Tweaks
     internal class moveVersion : MonoBehaviour
     {
         static ConfigEntry<bool> hideVersionText;
-        static ConfigEntry<bool> versionTextLeft;
+        static ConfigEntry<bool> versionTextRight;
         GameObject version = null;
         Vector3 previousPos;
         float timeToCheck = 0;
@@ -20,7 +20,7 @@ namespace TinyTweaks.Tweaks
         {
             var config = Plugin.config;
             hideVersionText = config.Bind("Version", "Hide Version", false);
-            versionTextLeft = config.Bind("Version", "Move Version left", true);
+            versionTextRight = config.Bind("Version", "Move Version right", true);
         }
 
         void Start()
@@ -29,7 +29,7 @@ namespace TinyTweaks.Tweaks
             version = null;
             Plugin.log("Trying to find VersionString");
             hideVersionText.SettingChanged += (_, _) => CheckHiddenText();
-            versionTextLeft.SettingChanged += (_, _) => CheckTextLeft();
+            versionTextRight.SettingChanged += (_, _) => CheckTextLeft();
         }
 
         void Update()
@@ -54,10 +54,9 @@ namespace TinyTweaks.Tweaks
         {
             if (version == null) return;
             TextMeshProUGUI tmpro = version.GetComponent<TextMeshProUGUI>();
-            if (versionTextLeft.Value)
+            if (versionTextRight.Value)
             {
                 version.SetActive(true);
-                hideVersionText.Value = false;
                 tmpro.alignment = TextAlignmentOptions.TopRight;
                 tmpro.horizontalAlignment = HorizontalAlignmentOptions.Right;
                 version.transform.localPosition = new Vector3(425f, 540, 0);

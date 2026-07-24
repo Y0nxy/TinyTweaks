@@ -32,8 +32,8 @@ namespace TinyTweaks.Tweaks
             NormalEyes.Value = false;
             DeadEyes.SettingChanged += (_, _) =>
             {
-                Plugin.Notification("Dead Eyes is " + (DeadEyes.Value ? "ON" : "OFF"));
                 if (!DeadEyes.Value) return; // only trigger when turning on
+                Plugin.Notification("Dead Eyes is " + (DeadEyes.Value ? "ON" : "OFF"));
                 DeadEyes.Value = false;
                 passedOutEyes.Value = false; // turn off passed out eyes if dead eyes is turned on
                 NormalEyes.Value = false;
@@ -45,8 +45,8 @@ namespace TinyTweaks.Tweaks
             };
             passedOutEyes.SettingChanged += (_, _) =>
             {
-                Plugin.Notification("Passed Out Eyes is " + (passedOutEyes.Value ? "ON" : "OFF"));
                 if (!passedOutEyes.Value) return; // only trigger when turning on
+                Plugin.Notification("Passed Out Eyes is " + (passedOutEyes.Value ? "ON" : "OFF"));
                 passedOutEyes.Value = false;
                 DeadEyes.Value = false; // turn off dead eyes if passed out eyes is turned on
                 NormalEyes.Value = false;
@@ -58,8 +58,8 @@ namespace TinyTweaks.Tweaks
             };
             NormalEyes.SettingChanged += (_, _) =>
             {
-                Plugin.Notification("Normal Eyes is " + (NormalEyes.Value ? "ON" : "OFF"));
                 if (!NormalEyes.Value) return; // only trigger when turning on
+                Plugin.Notification("Normal Eyes is " + (NormalEyes.Value ? "ON" : "OFF"));
                 NormalEyes.Value = false;
                 DeadEyes.Value = false; // turn off dead eyes if normal eyes is turned on
                 passedOutEyes.Value = false; // turn off passed out eyes if normal eyes is turned on

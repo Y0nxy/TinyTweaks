@@ -84,6 +84,8 @@ namespace TinyTweaks
             if (harmony != null)
             {
                 harmony.UnpatchSelf();
+                if (TweaksObj != null)
+                    Destroy(TweaksObj);
                 log("Unloading mod " + Name);
             }
         }

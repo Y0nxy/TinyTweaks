@@ -113,7 +113,7 @@ namespace TinyTweaks.Tweaks
         {
             if (pv.IsMine && lastForceTime > 0f)
             {
-                if (Time.time - lastForceTime >= 3.5f)
+                if (Time.time - lastForceTime >= 1.5f)
                 {
                     ReturnOwnershipToMaster();
                     lastForceTime = -1f;

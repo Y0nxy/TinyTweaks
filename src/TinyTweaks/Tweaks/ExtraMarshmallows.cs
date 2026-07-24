@@ -12,6 +12,7 @@ namespace TinyTweaks.Tweaks
     {
         //Configs
         static ConfigEntry<bool> enableExtraMarshmallows;
+        static ConfigEntry<bool> enableExtraBackpacks;
         static ConfigEntry<bool> enableCampfireProtection;
         static ConfigEntry<float> hotdogPercent;
 
@@ -30,6 +31,7 @@ namespace TinyTweaks.Tweaks
         public static void Start()
         {
             enableExtraMarshmallows = Plugin.config.Bind("Campfire", "Extra Marshmallows", true);
+            enableExtraBackpacks = Plugin.config.Bind("Campfire", "Extra Backpacks", false);
             enableCampfireProtection = Plugin.config.Bind("Campfire", "Campfire Protection", true);
             hotdogPercent = Plugin.config.Bind("Campfire", "Hotdog spawn chance", 33f, new ConfigDescription("from 0 to 100%", new AcceptableValueRange<float>(0f, 100f)));
         }
@@ -49,10 +51,16 @@ namespace TinyTweaks.Tweaks
                 }
                 if (enableCampfireProtection.Value)
                     nextCampfire.gameObject.AddComponent<CampfireProtection>();
-                if (!isMasterAndEnabled)
+
+                if (!PhotonNetwork.IsMasterClient) return true;
+                if (enableExtraBackpacks.Value)
                 {
-                    return true;
+                    for (int i = 0; i < playerCount - marshmallowsTaken; i++)
+                    {
+                        SpawnExtraBackpacks(i);
+                    }
                 }
+                if (!enableExtraMarshmallows.Value) return true;
                 Plugin.log("Skipping Spawning campfire items for " + campfireRoot.gameObject.name);
                 marshmallows.Clear(); //leaving the old marshmallows be as is
                 marshmallowsTaken = 0;
@@ -160,6 +168,27 @@ namespace TinyTweaks.Tweaks
             var item = itemObj.GetComponent<Item>();
             if (item != null) item.SetKinematicNetworked(true);
             marshmallows.Add(itemObj);
+        }
+        static void SpawnExtraBackpacks(int partOfCircle)
+        {
+            // Calculate the angle for this specific marshmallow
+            // We use 2 * Mathf.PI to represent a full circle in radians
+            float angle = partOfCircle * (2 * Mathf.PI / playerCount);
+
+            // Calculate the X and Z position (assuming Y is up)
+            float x = Mathf.Cos(angle) * radius * 2;
+            float z = Mathf.Sin(angle) * radius * 2;
+
+            // Create the spawn position relative to the origin
+            Vector3 spawnPosition = originPoint + new Vector3(x, 0, z);
+            spawnPosition.y = CastToFloor(spawnPosition);
+            Vector3 directionToCenter = originPoint - spawnPosition;
+
+            // We force Y to be 0 so they don't tilt up/down if your campfire is on a slope.
+            directionToCenter.y = 0;
+            Quaternion lookRotation = Quaternion.LookRotation(directionToCenter) * Quaternion.Euler(0, -90, 0);
+            string itemToSpawn = "0_Items/Backpack";
+            GameObject itemObj = PhotonNetwork.InstantiateRoomObject(itemToSpawn, spawnPosition, lookRotation);
         }
         static float CastToFloor(Vector3 spawnPosition)
         {
