@@ -14,6 +14,7 @@ namespace TinyTweaks
     ///     Extra Marshmallows
     /// </summary>
     [BepInAutoPlugin]
+    [BepInDependency("com.borealityy.peaktextchat",BepInDependency.DependencyFlags.SoftDependency)]
     public partial class Plugin : BaseUnityPlugin
     {
         internal static ManualLogSource Log { get; private set; } = null!;
@@ -24,9 +25,9 @@ namespace TinyTweaks
         {
             Log = Logger;
             config = this.Config;
-            StartTweaks();
             SceneManager.sceneLoaded += OnSceneChanged;
             harmony = new Harmony("TinyTweaks!");
+            StartTweaks();
             harmony.PatchAll();
             Log.LogInfo($"Plugin {Name} is loaded!");
         }
@@ -50,6 +51,7 @@ namespace TinyTweaks
             moveVersion.Binds();
             BingBongSays.Start();
             noBonusStaminaFromJumps.Start();
+            whisperTextChat.CheckforPeakTextChat(harmony);
         }
         public static void Notification(string message, string color = "FFFFFF", bool sound = false)
         {

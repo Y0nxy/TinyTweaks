@@ -29,6 +29,11 @@
   <ItemGroup>
     <ModFile Include="$(TargetPath)" Destination="plugins/" />
   </ItemGroup>
+  <ItemGroup>
+    <Reference Include="PeakTextChat">
+      <HintPath>..\..\..\..\..\AppData\Roaming\com.kesomannen.gale\peak\profiles\modTesting\BepInEx\plugins\borealityy-PeakTextChat\PeakTextChat.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 
   <!-- Thunderstore package metadata -->
   <ItemGroup>
