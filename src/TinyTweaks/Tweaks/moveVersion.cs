@@ -12,24 +12,30 @@ namespace TinyTweaks.Tweaks
     {
         static ConfigEntry<bool> hideVersionText;
         static ConfigEntry<bool> versionTextRight;
+        static ConfigEntry<float> Xpos;
+        static ConfigEntry<float> Ypos;
         GameObject version = null;
         Vector3 previousPos;
         float timeToCheck = 0;
 
         public static void Binds()
         {
-            var config = Plugin.config;
+            var config = tinyTweaks.config;
             hideVersionText = config.Bind("Version", "Hide Version", false);
             versionTextRight = config.Bind("Version", "Move Version right", true);
+            Xpos = config.Bind("Version", "X position", 425f);
+            Ypos = config.Bind("Version", "Y position", 540f);
         }
 
         void Start()
         {
             timeToCheck = Time.time + 3f;
             version = null;
-            Plugin.log("Trying to find VersionString");
+            tinyTweaks.log("Trying to find VersionString");
             hideVersionText.SettingChanged += (_, _) => CheckHiddenText();
             versionTextRight.SettingChanged += (_, _) => CheckTextLeft();
+            Xpos.SettingChanged += (_, _) => CheckTextLeft();
+            Ypos.SettingChanged += (_, _) => CheckTextLeft();
         }
 
         void Update()
@@ -39,11 +45,11 @@ namespace TinyTweaks.Tweaks
             var versionString = FindAnyObjectByType<VersionString>();
             if (versionString == null)
             {
-                Plugin.log("No VersionString in Scene");
+                tinyTweaks.log("No VersionString in Scene");
                 //Destroy(this);
                 return;
             }
-            Plugin.log("VersionString found!");
+            tinyTweaks.log("VersionString found!");
             version = versionString.gameObject;
             previousPos = version.transform.localPosition;
             CheckHiddenText();
@@ -59,7 +65,7 @@ namespace TinyTweaks.Tweaks
                 version.SetActive(true);
                 tmpro.alignment = TextAlignmentOptions.TopRight;
                 tmpro.horizontalAlignment = HorizontalAlignmentOptions.Right;
-                version.transform.localPosition = new Vector3(425f, 540, 0);
+                version.transform.localPosition = new Vector3(Xpos.Value, Ypos.Value, 0);
                 return;
             }
             tmpro.alignment = TextAlignmentOptions.TopLeft;

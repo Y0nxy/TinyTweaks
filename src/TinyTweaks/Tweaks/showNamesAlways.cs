@@ -16,7 +16,7 @@ namespace TinyTweaks.Tweaks
 
         public static void Start()
         {
-            var config = Plugin.config;
+            var config = tinyTweaks.config;
             AlwaysShowNames = config.Bind("Show Names Always", "Always Show Names", true);
             //min 0, max 360
             VisibleAngle = config.Bind("Show Names Always", "Visible Angle", 52f,

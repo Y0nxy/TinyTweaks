@@ -183,7 +183,7 @@ namespace TinyTweaks.Tweaks
             if (PhotonNetwork.IsConnected && PhotonNetwork.MasterClient != null && pv.Owner != PhotonNetwork.MasterClient)
             {
                 pv.TransferOwnership(PhotonNetwork.MasterClient);
-                Plugin.Log.LogInfo("[BasketballMagnet] Inactivity timeout (3.5s). Transferred ownership back to Master Client.");
+                tinyTweaks.Log.LogInfo("[BasketballMagnet] Inactivity timeout (3.5s). Transferred ownership back to Master Client.");
             }
         }
         private void SpawnDebugMarker(Vector3 position)
@@ -219,7 +219,7 @@ namespace TinyTweaks.Tweaks
         {
             targetView.RequestOwnership();
             targetView.TransferOwnership(requestingPlayer);
-            Plugin.Log.LogInfo($"[BasketballMagnet] Ownership requested by Player {requestingPlayer.UserId}. Attempting transfer...");
+            tinyTweaks.Log.LogInfo($"[BasketballMagnet] Ownership requested by Player {requestingPlayer.UserId}. Attempting transfer...");
         }
         public void OnOwnershipTransfered(PhotonView targetView, Photon.Realtime.Player previousOwner)
         {
@@ -227,12 +227,12 @@ namespace TinyTweaks.Tweaks
             {
                 ResetState();
                 FindNearestHoop();
-                Plugin.Log.LogInfo("[BasketballMagnet] Ownership transfer successful. Assist system active.");
+                tinyTweaks.Log.LogInfo("[BasketballMagnet] Ownership transfer successful. Assist system active.");
             }
         }
         public void OnOwnershipTransferFailed(PhotonView targetView, Photon.Realtime.Player previousOwner)
         {
-            Plugin.Log.LogInfo("[BasketballMagnet] Ownership transfer failed.");
+            tinyTweaks.Log.LogInfo("[BasketballMagnet] Ownership transfer failed.");
         }
         #endregion
     }

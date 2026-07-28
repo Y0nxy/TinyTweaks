@@ -27,7 +27,7 @@ namespace TinyTweaks.Tweaks
 
         public static void Binds()
         {
-            var config = Plugin.config;
+            var config = tinyTweaks.config;
             EnableAssist = config.Bind("Basketball", "Enable Assist", true, "Master toggle for the assist system.");
             RageAimbot = config.Bind("Basketball", "RageAim-Bot", false, "When true, runs infinitely without self-destructing. When false, acts as one-time recorrections.");
             PeakHeightAboveHoop = config.Bind("Basketball", "Arc", 1.5f, new ConfigDescription("How high above the hoop the ball will reach at the peak of its arc.", new AcceptableValueRange<float>(0f, 100f)));

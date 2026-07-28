@@ -2,6 +2,7 @@
 using HarmonyLib;
 using Photon.Pun;
 using System;
+using UnityEngine.InputSystem;
 
 namespace TinyTweaks.Tweaks
 {
@@ -11,16 +12,22 @@ namespace TinyTweaks.Tweaks
         public static ConfigEntry<bool> DeadEyes;
         public static ConfigEntry<bool> passedOutEyes;
         public static ConfigEntry<bool> NormalEyes;
+        static ConfigEntry<Key> deadEyesKey;
+        static ConfigEntry<Key> passedEyesKey;
+        static ConfigEntry<Key> NormalEyesKey;
         public static void Start()
         {
-            var config = Plugin.config;
+            var config = tinyTweaks.config;
             NoobSash = config.Bind("Customization", "Noob Sash", false, "Toggle the Noob Sash (hides badges) on/off.");
             DeadEyes = config.Bind("Customization", "Dead Eyes", false, "Toggle the Dead Eyes on/off.");
             passedOutEyes = config.Bind("Customization", "Passed Out Eyes", false, "Toggle the Passed Out Eyes on/off.");
             NormalEyes = config.Bind("Customization", "Normal Eyes", false, "Toggle the Normal Eyes on/off.");
+            deadEyesKey = config.Bind("Customization", "Dead Eyes Keybind", Key.None);
+            passedEyesKey = config.Bind("Customization", "Passed Out Eyes Keybind", Key.None);
+            NormalEyesKey = config.Bind("Customization", "Normal Eyes Keybind", Key.None);
             NoobSash.SettingChanged += (_, _) =>
             {
-                Plugin.Notification("Noob Sash is " + (NoobSash.Value ? "ON" : "OFF"));
+                tinyTweaks.Notification("Noob Sash is " + (NoobSash.Value ? "ON" : "OFF"));
                 CharacterData localCharacterData = Character.localCharacter?.GetComponent<CharacterData>();
                 if (localCharacterData != null)
                 {
@@ -33,7 +40,7 @@ namespace TinyTweaks.Tweaks
             DeadEyes.SettingChanged += (_, _) =>
             {
                 if (!DeadEyes.Value) return; // only trigger when turning on
-                Plugin.Notification("Dead Eyes is " + (DeadEyes.Value ? "ON" : "OFF"));
+                tinyTweaks.Notification("Dead Eyes is " + (DeadEyes.Value ? "ON" : "OFF"));
                 DeadEyes.Value = false;
                 passedOutEyes.Value = false; // turn off passed out eyes if dead eyes is turned on
                 NormalEyes.Value = false;
@@ -46,7 +53,7 @@ namespace TinyTweaks.Tweaks
             passedOutEyes.SettingChanged += (_, _) =>
             {
                 if (!passedOutEyes.Value) return; // only trigger when turning on
-                Plugin.Notification("Passed Out Eyes is " + (passedOutEyes.Value ? "ON" : "OFF"));
+                tinyTweaks.Notification("Passed Out Eyes is " + (passedOutEyes.Value ? "ON" : "OFF"));
                 passedOutEyes.Value = false;
                 DeadEyes.Value = false; // turn off dead eyes if passed out eyes is turned on
                 NormalEyes.Value = false;
@@ -59,7 +66,7 @@ namespace TinyTweaks.Tweaks
             NormalEyes.SettingChanged += (_, _) =>
             {
                 if (!NormalEyes.Value) return; // only trigger when turning on
-                Plugin.Notification("Normal Eyes is " + (NormalEyes.Value ? "ON" : "OFF"));
+                tinyTweaks.Notification("Normal Eyes is " + (NormalEyes.Value ? "ON" : "OFF"));
                 NormalEyes.Value = false;
                 DeadEyes.Value = false; // turn off dead eyes if normal eyes is turned on
                 passedOutEyes.Value = false; // turn off passed out eyes if normal eyes is turned on
@@ -88,5 +95,9 @@ namespace TinyTweaks.Tweaks
             }
         }
 
+        void Update()
+        {
+            if ()
+        }
     }
 }

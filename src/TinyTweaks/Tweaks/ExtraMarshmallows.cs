@@ -30,10 +30,10 @@ namespace TinyTweaks.Tweaks
         //Taken = 0 on any new campfire
         public static void Start()
         {
-            enableExtraMarshmallows = Plugin.config.Bind("Campfire", "Extra Marshmallows", true);
-            enableExtraBackpacks = Plugin.config.Bind("Campfire", "Extra Backpacks", false);
-            enableCampfireProtection = Plugin.config.Bind("Campfire", "Campfire Protection", true);
-            hotdogPercent = Plugin.config.Bind("Campfire", "Hotdog spawn chance", 33f, new ConfigDescription("from 0 to 100%", new AcceptableValueRange<float>(0f, 100f)));
+            enableExtraMarshmallows = tinyTweaks.config.Bind("Campfire", "Extra Marshmallows", true);
+            enableExtraBackpacks = tinyTweaks.config.Bind("Campfire", "Extra Backpacks", false);
+            enableCampfireProtection = tinyTweaks.config.Bind("Campfire", "Campfire Protection", true);
+            hotdogPercent = tinyTweaks.config.Bind("Campfire", "Hotdog spawn chance", 33f, new ConfigDescription("from 0 to 100%", new AcceptableValueRange<float>(0f, 100f)));
         }
         [HarmonyPatch(typeof(MapHandler), "SpawnCampfireItems")]
         private class SetCampfire
@@ -46,7 +46,7 @@ namespace TinyTweaks.Tweaks
                 nextCampfire = campfireRoot.GetComponentInChildren<Campfire>();
                 if (nextCampfire == null)
                 {
-                    Plugin.Log.LogError("Campfire Component not found");
+                    tinyTweaks.Log.LogError("Campfire Component not found");
                     return true;
                 }
                 if (enableCampfireProtection.Value)
@@ -61,7 +61,7 @@ namespace TinyTweaks.Tweaks
                     }
                 }
                 if (!enableExtraMarshmallows.Value) return true;
-                Plugin.log("Skipping Spawning campfire items for " + campfireRoot.gameObject.name);
+                tinyTweaks.log("Skipping Spawning campfire items for " + campfireRoot.gameObject.name);
                 marshmallows.Clear(); //leaving the old marshmallows be as is
                 marshmallowsTaken = 0;
                 charactersThatPickedUp.Clear();
@@ -77,7 +77,7 @@ namespace TinyTweaks.Tweaks
             static void OnPlayerEnter()
             {
                 if (!isMasterAndEnabled) return;
-                Plugin.log("Someone joined! Updated Marshmallows to:" + playerCount.ToString());
+                tinyTweaks.log("Someone joined! Updated Marshmallows to:" + playerCount.ToString());
                 RefreshMarshmallows();
             }
             [HarmonyPatch("OnPlayerLeftRoom")]
@@ -85,7 +85,7 @@ namespace TinyTweaks.Tweaks
             private static void OnPlayerLeft()
             {
                 if (!isMasterAndEnabled) return;
-                Plugin.log("Someone left! Updated Marshmallows to:" + playerCount.ToString());
+                tinyTweaks.log("Someone left! Updated Marshmallows to:" + playerCount.ToString());
                 RefreshMarshmallows();
             }
         }
@@ -100,7 +100,7 @@ namespace TinyTweaks.Tweaks
                 if (!marshmallows.Contains(__instance.gameObject)) return true;
                 if (charactersThatPickedUp.Contains(characterView))
                 {
-                    Plugin.log(characterView.name + " tried taking another Marshmallow! Unbelieveable...");
+                    tinyTweaks.log(characterView.name + " tried taking another Marshmallow! Unbelieveable...");
                     __instance.view.RPC("DenyPickupRPC", characterView.Owner, Array.Empty<object>());
                     return false;
                 }
@@ -138,7 +138,7 @@ namespace TinyTweaks.Tweaks
                 PhotonNetwork.Destroy(obj);
             }
             marshmallows.Clear();
-            Plugin.log($"RefreshMarshmallows Called! Taken: {marshmallowsTaken}/{playerCount}");
+            tinyTweaks.log($"RefreshMarshmallows Called! Taken: {marshmallowsTaken}/{playerCount}");
             for (int i = 0; i < playerCount - marshmallowsTaken; i++)
             {
                 SpawnMarshmallow(i);

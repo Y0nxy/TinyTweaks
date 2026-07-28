@@ -15,7 +15,7 @@ namespace TinyTweaks
     /// </summary>
     [BepInAutoPlugin]
     [BepInDependency("com.borealityy.peaktextchat",BepInDependency.DependencyFlags.SoftDependency)]
-    public partial class Plugin : BaseUnityPlugin
+    public partial class tinyTweaks : BaseUnityPlugin
     {
         internal static ManualLogSource Log { get; private set; } = null!;
         public static  ConfigFile config;
@@ -81,6 +81,10 @@ namespace TinyTweaks
             Log.LogInfo(message);
         }
 
+        static void Update()
+        {
+            Customizations.update
+        }
         void OnDestroy()
         {
             if (harmony != null)

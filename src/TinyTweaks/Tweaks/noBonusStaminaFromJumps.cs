@@ -13,7 +13,7 @@ namespace TinyTweaks.Tweaks
 
         public static void Start()
         {
-            enableNoStamJump = Plugin.config.Bind("Shorties", "NoBonusStaminaFromJumps", false);
+            enableNoStamJump = tinyTweaks.config.Bind("Shorties", "NoBonusStaminaFromJumps", false);
         }
 
         [HarmonyPatch]

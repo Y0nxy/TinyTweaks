@@ -13,7 +13,7 @@ namespace TinyTweaks.Tweaks
 
         public static void Start()
         {
-            config = Plugin.config;
+            config = tinyTweaks.config;
             enableBingBongPatch = config.Bind("Shorties", "BingBong", false);
             bingBongAnswer = config.Bind("Shorties", "BingBongAnswer(rounded down)", 0f, new ConfigDescription("The answer to the Bing Bong action.",
                         new AcceptableValueRange<float>(0, 30)));
@@ -22,7 +22,7 @@ namespace TinyTweaks.Tweaks
             {
                 if (bingBongAnswer.Value % 1f != 0)
                 {
-                    Plugin.Log.LogWarning($"BingBongAnswer value {bingBongAnswer.Value} is not an integer. Rounding down to nearest integer.");
+                    tinyTweaks.Log.LogWarning($"BingBongAnswer value {bingBongAnswer.Value} is not an integer. Rounding down to nearest integer.");
                     bingBongAnswer.Value = Mathf.FloorToInt(bingBongAnswer.Value);
                 }
             };
@@ -44,7 +44,7 @@ namespace TinyTweaks.Tweaks
                     {
                         if (bingBongAnswer.Value % 1f != 0)
                         {
-                            Plugin.Log.LogWarning($"BingBongAnswer value {bingBongAnswer.Value} is not an integer. Rounding down to nearest integer.");
+                            tinyTweaks.Log.LogWarning($"BingBongAnswer value {bingBongAnswer.Value} is not an integer. Rounding down to nearest integer.");
                             bingBongAnswer.Value = Mathf.FloorToInt(bingBongAnswer.Value);
                         }
                     };

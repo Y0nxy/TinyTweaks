@@ -19,15 +19,15 @@ namespace TinyTweaks.Tweaks
         static ConfigEntry<bool> enableWhisperTextChat;
         public static void CheckforPeakTextChat(Harmony harmony)
         {
-            enableWhisperTextChat = Plugin.config.Bind("Shorties", "WhisperCmd", true);
+            enableWhisperTextChat = tinyTweaks.config.Bind("Shorties", "WhisperCmd", true);
             if (Chainloader.PluginInfos.ContainsKey("com.borealityy.peaktextchat"))
             {
-                Plugin.log("found peaktextchat. Initializing patch!");
+                tinyTweaks.log("found peaktextchat. Initializing patch!");
                 var sendChatMessageMethod = AccessTools.Method("PeakTextChat.TextChatManager:SendChatMessage");
                 var SlashCommandMethod = new HarmonyMethod(AccessTools.Method(typeof(InterceptMessage), ("SlashCommand")));
                 if (sendChatMessageMethod == null || SlashCommandMethod == null)
                 {
-                    Plugin.log(sendChatMessageMethod==null?"didn't find peaktextchat method":"didn't find whisper method");
+                    tinyTweaks.log(sendChatMessageMethod==null?"didn't find peaktextchat method":"didn't find whisper method");
                     return;
                 }
                 harmony.Patch(sendChatMessageMethod,prefix:SlashCommandMethod);
@@ -107,7 +107,7 @@ namespace TinyTweaks.Tweaks
             }
             else
             {
-                Plugin.log("logMethod could not be found");
+                tinyTweaks.log("logMethod could not be found");
             }
             //PeakTextChat.TextChatDisplay.instance.AddMessage(message);
         }
