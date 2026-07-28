@@ -34,6 +34,7 @@ namespace TinyTweaks
 
         void OnSceneChanged(Scene scene, LoadSceneMode mode)
         {
+            if (scene.name == "Title") return;
             TweaksObj = new GameObject("Tweaks!");
             if (scene.name == "Airport")
             {
@@ -81,9 +82,9 @@ namespace TinyTweaks
             Log.LogInfo(message);
         }
 
-        static void Update()
+        void Update()
         {
-            Customizations.update
+            Customizations.Update();
         }
         void OnDestroy()
         {

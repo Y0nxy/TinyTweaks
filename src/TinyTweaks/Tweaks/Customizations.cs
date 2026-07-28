@@ -2,7 +2,7 @@
 using HarmonyLib;
 using Photon.Pun;
 using System;
-using UnityEngine.InputSystem;
+using UnityEngine;
 
 namespace TinyTweaks.Tweaks
 {
@@ -12,9 +12,9 @@ namespace TinyTweaks.Tweaks
         public static ConfigEntry<bool> DeadEyes;
         public static ConfigEntry<bool> passedOutEyes;
         public static ConfigEntry<bool> NormalEyes;
-        static ConfigEntry<Key> deadEyesKey;
-        static ConfigEntry<Key> passedEyesKey;
-        static ConfigEntry<Key> NormalEyesKey;
+        static ConfigEntry<KeyCode> deadEyesKey;
+        static ConfigEntry<KeyCode> passedEyesKey;
+        static ConfigEntry<KeyCode> NormalEyesKey;
         public static void Start()
         {
             var config = tinyTweaks.config;
@@ -22,9 +22,9 @@ namespace TinyTweaks.Tweaks
             DeadEyes = config.Bind("Customization", "Dead Eyes", false, "Toggle the Dead Eyes on/off.");
             passedOutEyes = config.Bind("Customization", "Passed Out Eyes", false, "Toggle the Passed Out Eyes on/off.");
             NormalEyes = config.Bind("Customization", "Normal Eyes", false, "Toggle the Normal Eyes on/off.");
-            deadEyesKey = config.Bind("Customization", "Dead Eyes Keybind", Key.None);
-            passedEyesKey = config.Bind("Customization", "Passed Out Eyes Keybind", Key.None);
-            NormalEyesKey = config.Bind("Customization", "Normal Eyes Keybind", Key.None);
+            deadEyesKey = config.Bind("Customization", "Dead Eyes Keybind", KeyCode.None);
+            passedEyesKey = config.Bind("Customization", "Passed Out Eyes Keybind", KeyCode.None);
+            NormalEyesKey = config.Bind("Customization", "Normal Eyes Keybind", KeyCode.None);
             NoobSash.SettingChanged += (_, _) =>
             {
                 tinyTweaks.Notification("Noob Sash is " + (NoobSash.Value ? "ON" : "OFF"));
@@ -95,9 +95,13 @@ namespace TinyTweaks.Tweaks
             }
         }
 
-        void Update()
+        public static void Update()
         {
-            if ()
+            if (GUIManager.instance != null && GUIManager.instance.windowBlockingInput) return; //no keypress when typing in chat or using menus
+
+            if (Input.GetKeyDown(deadEyesKey.Value)) DeadEyes.Value = true;
+            if (Input.GetKeyDown(passedEyesKey.Value)) passedOutEyes.Value = true;
+            if (Input.GetKeyDown(NormalEyesKey.Value)) NormalEyes.Value = true;
         }
     }
 }

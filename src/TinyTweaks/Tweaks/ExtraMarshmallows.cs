@@ -15,6 +15,7 @@ namespace TinyTweaks.Tweaks
         static ConfigEntry<bool> enableExtraBackpacks;
         static ConfigEntry<bool> enableCampfireProtection;
         static ConfigEntry<float> hotdogPercent;
+        static ConfigEntry<int> cheatMallows;
 
         //other stuff
         public static Campfire nextCampfire;
@@ -30,10 +31,12 @@ namespace TinyTweaks.Tweaks
         //Taken = 0 on any new campfire
         public static void Start()
         {
-            enableExtraMarshmallows = tinyTweaks.config.Bind("Campfire", "Extra Marshmallows", true);
-            enableExtraBackpacks = tinyTweaks.config.Bind("Campfire", "Extra Backpacks", false);
-            enableCampfireProtection = tinyTweaks.config.Bind("Campfire", "Campfire Protection", true);
-            hotdogPercent = tinyTweaks.config.Bind("Campfire", "Hotdog spawn chance", 33f, new ConfigDescription("from 0 to 100%", new AcceptableValueRange<float>(0f, 100f)));
+            var config = tinyTweaks.config;
+            enableExtraMarshmallows = config.Bind("Campfire", "Extra Marshmallows", true);
+            enableExtraBackpacks = config.Bind("Campfire", "Extra Backpacks", false);
+            enableCampfireProtection = config.Bind("Campfire", "Campfire Protection", true);
+            hotdogPercent = config.Bind("Campfire", "Hotdog spawn chance", 33f, new ConfigDescription("from 0 to 100%", new AcceptableValueRange<float>(0f, 100f)));
+            cheatMallows = config.Bind("Campfire", "Cheat mallows", 0, new ConfigDescription("0 disabled - to 250", new AcceptableValueRange<int>(0, 250)));
         }
         [HarmonyPatch(typeof(MapHandler), "SpawnCampfireItems")]
         private class SetCampfire
@@ -139,16 +142,24 @@ namespace TinyTweaks.Tweaks
             }
             marshmallows.Clear();
             tinyTweaks.log($"RefreshMarshmallows Called! Taken: {marshmallowsTaken}/{playerCount}");
+            int partOfCircle = 0;
             for (int i = 0; i < playerCount - marshmallowsTaken; i++)
             {
                 SpawnMarshmallow(i);
+                partOfCircle = i;
             }
+            for (int i = 0; i < cheatMallows.Value; i++)
+            {
+                partOfCircle++;
+                SpawnMarshmallow(partOfCircle, false);
+            }
+            tinyTweaks.log("Marshmallows number: " + partOfCircle);
         }
-        static void SpawnMarshmallow(int partOfCircle)
+        static void SpawnMarshmallow(int partOfCircle, bool isProtected = true)
         {
             // Calculate the angle for this specific marshmallow
             // We use 2 * Mathf.PI to represent a full circle in radians
-            float angle = partOfCircle * (2 * Mathf.PI / playerCount);
+            float angle = partOfCircle * (2 * Mathf.PI / playerCount + cheatMallows.Value);
 
             // Calculate the X and Z position (assuming Y is up)
             float x = Mathf.Cos(angle) * radius;
@@ -167,7 +178,8 @@ namespace TinyTweaks.Tweaks
             GameObject itemObj = PhotonNetwork.InstantiateRoomObject(itemToSpawn, spawnPosition, lookRotation);
             var item = itemObj.GetComponent<Item>();
             if (item != null) item.SetKinematicNetworked(true);
-            marshmallows.Add(itemObj);
+            if (isProtected)
+                marshmallows.Add(itemObj);
         }
         static void SpawnExtraBackpacks(int partOfCircle)
         {

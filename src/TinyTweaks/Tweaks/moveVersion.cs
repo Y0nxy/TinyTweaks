@@ -5,74 +5,86 @@ using BepInEx;
 using BepInEx.Configuration;
 using TMPro;
 using UnityEngine;
+using HarmonyLib;
 
 namespace TinyTweaks.Tweaks
 {
     internal class moveVersion : MonoBehaviour
     {
         static ConfigEntry<bool> hideVersionText;
-        static ConfigEntry<bool> versionTextRight;
+        static ConfigEntry<bool> moveVersionText;
         static ConfigEntry<float> Xpos;
         static ConfigEntry<float> Ypos;
-        GameObject version = null;
-        Vector3 previousPos;
-        float timeToCheck = 0;
+        static GameObject version = null;
+        static Vector3 previousPosVersion;
+        //AscentUI
+
+        static ConfigEntry<bool> moveAscentUI;
+        static ConfigEntry<float> XposAscent;
+        static ConfigEntry<float> YposAscent;
+        static GameObject ascentUI = null;
+        static Vector3 previousPosAscent;
+
+        static ConfigEntry<bool> usePeakFont;
+        static TMP_FontAsset defaultFont = null;
+        static TMP_FontAsset peakFont = null;
+        static ConfigEntry<float> fontSize;
 
         public static void Binds()
         {
             var config = tinyTweaks.config;
             hideVersionText = config.Bind("Version", "Hide Version", false);
-            versionTextRight = config.Bind("Version", "Move Version right", true);
-            Xpos = config.Bind("Version", "X position", 425f);
-            Ypos = config.Bind("Version", "Y position", 540f);
+            moveVersionText = config.Bind("Version", "Move Version Text", true);
+            Xpos = config.Bind("Version", "X position", 615f, new ConfigDescription("", new AcceptableValueRange<float>(-2000f, 2000f)));
+            Ypos = config.Bind("Version", "Y position", 540f, new ConfigDescription("", new AcceptableValueRange<float>(-2000f, 2000f)));
+
+            moveAscentUI = config.Bind("Version", "Move Ascent Text", true);
+            XposAscent = config.Bind("Version", "X position Ascent", 955f, new ConfigDescription("", new AcceptableValueRange<float>(-2000f, 2000f)));
+            YposAscent = config.Bind("Version", "Y position Ascent", 490f, new ConfigDescription("", new AcceptableValueRange<float>(-2000f, 2000f)));
+            usePeakFont = config.Bind("Version", "Use Peak Font", true);
+            fontSize = config.Bind("Version", "Font Size", 24f, new ConfigDescription("", new AcceptableValueRange<float>(0f, 100f)));
         }
 
         void Start()
         {
-            timeToCheck = Time.time + 3f;
-            version = null;
             tinyTweaks.log("Trying to find VersionString");
-            hideVersionText.SettingChanged += (_, _) => CheckHiddenText();
-            versionTextRight.SettingChanged += (_, _) => CheckTextLeft();
-            Xpos.SettingChanged += (_, _) => CheckTextLeft();
-            Ypos.SettingChanged += (_, _) => CheckTextLeft();
+            hideVersionText.SettingChanged += (_, _) => updateVersionText();
+            moveVersionText.SettingChanged += (_, _) => updateVersionText();
+            Xpos.SettingChanged += (_, _) => updateVersionText();
+            Ypos.SettingChanged += (_, _) => updateVersionText();
+            //AscentUI
+            moveAscentUI.SettingChanged += (_, _) => moveAscentText();
+            XposAscent.SettingChanged += (_, _) => moveAscentText();
+            YposAscent.SettingChanged += (_, _) => moveAscentText();
+            usePeakFont.SettingChanged += (_, _) => peakfontUpdate();
+            fontSize.SettingChanged += (_, _) => peakfontUpdate();
         }
 
-        void Update()
+        [HarmonyPatch]
+        static class UIPatches
         {
-            if (version != null || timeToCheck > Time.time) return;
-            timeToCheck = Time.time + 3f;
-            var versionString = FindAnyObjectByType<VersionString>();
-            if (versionString == null)
+            [HarmonyPatch(typeof(VersionString), "Start")]
+            [HarmonyPostfix]
+            static void setVersionObj(VersionString __instance)
             {
-                tinyTweaks.log("No VersionString in Scene");
-                //Destroy(this);
-                return;
+                version = __instance.gameObject;
+                previousPosVersion = version.transform.localPosition;
+                tinyTweaks.log("VersionString found!");
+                updateVersionText();
+                peakfontUpdate();
             }
-            tinyTweaks.log("VersionString found!");
-            version = versionString.gameObject;
-            previousPos = version.transform.localPosition;
-            CheckHiddenText();
-            CheckTextLeft();
+            [HarmonyPatch(typeof(AscentUI), "Start")]
+            [HarmonyPostfix]
+            static void setAscentObj(AscentUI __instance)
+            {
+                tinyTweaks.log("found AscentUI");
+                ascentUI = __instance.gameObject;
+                previousPosAscent = ascentUI.transform.localPosition;
+                moveAscentText();
+            }
+        }
 
-        }
-        void CheckTextLeft()
-        {
-            if (version == null) return;
-            TextMeshProUGUI tmpro = version.GetComponent<TextMeshProUGUI>();
-            if (versionTextRight.Value)
-            {
-                version.SetActive(true);
-                tmpro.alignment = TextAlignmentOptions.TopRight;
-                tmpro.horizontalAlignment = HorizontalAlignmentOptions.Right;
-                version.transform.localPosition = new Vector3(Xpos.Value, Ypos.Value, 0);
-                return;
-            }
-            tmpro.alignment = TextAlignmentOptions.TopLeft;
-            tmpro.horizontalAlignment = HorizontalAlignmentOptions.Left;
-            version.transform.localPosition = previousPos;
-        }
-        void CheckHiddenText()
+        static void updateVersionText()
         {
             if (version == null) return;
             if (hideVersionText.Value)
@@ -81,6 +93,48 @@ namespace TinyTweaks.Tweaks
                 return;
             }
             version.SetActive(true);
+            TextMeshProUGUI tmpro = version.GetComponent<TextMeshProUGUI>();
+            if (moveVersionText.Value)
+            {
+                tmpro.alignment = TextAlignmentOptions.Top;
+                tmpro.horizontalAlignment = HorizontalAlignmentOptions.Center;
+                version.transform.localPosition = new Vector3(Xpos.Value, Ypos.Value, 0);
+                return;
+            }
+            tmpro.alignment = TextAlignmentOptions.TopLeft;
+            tmpro.horizontalAlignment = HorizontalAlignmentOptions.Left;
+            version.transform.localPosition = previousPosVersion;
+        }
+
+        static void moveAscentText()
+        {
+            if (ascentUI == null) return;
+            if (moveAscentUI.Value)
+            {
+                tinyTweaks.log("Moved AscentUI");
+                ascentUI.transform.localPosition = new Vector3(XposAscent.Value, YposAscent.Value, 0);
+                return;
+            }
+            ascentUI.transform.localPosition = previousPosAscent;
+        }
+        static void peakfontUpdate()
+        {
+            if (version == null) return;
+            TextMeshProUGUI tmpro = version.GetComponent<TextMeshProUGUI>();
+            if (defaultFont == null) defaultFont = tmpro.font;
+            if (usePeakFont.Value)
+            {
+                if (peakFont == null)
+                {
+                    TMP_FontAsset[] fonts = Resources.FindObjectsOfTypeAll<TMP_FontAsset>();
+                    peakFont = Array.Find(fonts, f => f.name == "DarumaDropOne-Regular SDF");
+                }
+                tmpro.font = peakFont;
+                tmpro.fontSize = fontSize.Value;
+                return;
+            }
+            tmpro.font = defaultFont;
+            tmpro.fontSize = 18f;
         }
     }
 }
