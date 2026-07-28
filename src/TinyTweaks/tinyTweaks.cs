@@ -2,6 +2,7 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
+using PhotonSpawner;
 using System.Reflection;
 using TinyTweaks.Tweaks;
 using UnityEngine;
@@ -53,6 +54,7 @@ namespace TinyTweaks
             BingBongSays.Start();
             noBonusStaminaFromJumps.Start();
             whisperTextChat.CheckforPeakTextChat(harmony);
+            ChangeRopeToRed.Start();
         }
         public static void Notification(string message, string color = "FFFFFF", bool sound = false)
         {
