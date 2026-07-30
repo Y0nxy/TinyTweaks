@@ -1,4 +1,7 @@
-﻿using ExitGames.Client;
+﻿//using PeakTextChat;
+using BepInEx.Bootstrap;
+using BepInEx.Configuration;
+using ExitGames.Client;
 using ExitGames.Client.Photon;
 using HarmonyLib;
 using Photon.Chat;
@@ -7,10 +10,8 @@ using Photon.Realtime;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 using UnityEngine;
-//using PeakTextChat;
-using BepInEx.Bootstrap;
-using BepInEx.Configuration;
 
 namespace TinyTweaks.Tweaks
 {
@@ -141,7 +142,8 @@ namespace TinyTweaks.Tweaks
         {
             foreach (Photon.Realtime.Player plr in PhotonNetwork.PlayerList)
             {
-                if (plr.NickName.Contains(id, StringComparison.OrdinalIgnoreCase))
+                string cleanName = Regex.Replace(plr.NickName.ToLower(), @"</?color(=\w+|=[#\w]+)?>", string.Empty, RegexOptions.IgnoreCase);
+                if (cleanName.Contains(id, StringComparison.OrdinalIgnoreCase))
                     return plr;
             }
             logMessage("player not found!");

@@ -1,0 +1,44 @@
+﻿using HarmonyLib;
+using Photon.Pun;
+using Steamworks;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace TinyTweaks.Tweaks
+{
+    internal class ListNames
+    {
+        [HarmonyPatch(typeof(SteamLobbyHandler), "OnLobbyChat")]
+        static class Patches
+        {
+            [HarmonyPostfix]
+            internal static void PreSteamLobbyHandlerOnLobbyChat(SteamLobbyHandler __instance, ref LobbyChatMsg_t param)
+            {
+
+                tinyTweaks.log(string.Format("Steam Chat Message Received: '{0}' ({1})", SteamFriends.GetFriendPersonaName(new CSteamID(param.m_ulSteamIDUser)), param.m_ulSteamIDUser));
+                int numLobbyMembers = SteamMatchmaking.GetNumLobbyMembers(__instance.LobbySteamId);
+                for (int i = 0; i < numLobbyMembers; i++)
+                {
+                    CSteamID memberSteamID = SteamMatchmaking.GetLobbyMemberByIndex(__instance.LobbySteamId, i);
+                    string steamIDStr = memberSteamID.m_SteamID.ToString();
+
+                    // 1. Find matching Photon Player by comparing UserId with the SteamID string
+                    Photon.Realtime.Player photonPlayer = PhotonNetwork.PlayerList.FirstOrDefault(p => p.UserId == steamIDStr);
+
+                    // 2. Safely retrieve the NickName and ActorNumber
+                    string photonName = photonPlayer != null ? photonPlayer.NickName : "Unknown";
+                    string actorNumber = photonPlayer != null ? photonPlayer.ActorNumber.ToString() : "N/A";
+                    tinyTweaks.log(string.Format(
+                    "[tinyTweaks] Steam Lobby Member: '{0}' ({1}) [PhotonName: {2} #{3} ActorNumber]",
+                    SteamFriends.GetFriendPersonaName(memberSteamID),
+                    memberSteamID.m_SteamID,
+                    photonName,
+                    actorNumber
+                    ));
+                }
+            }
+        }
+    }
+}
