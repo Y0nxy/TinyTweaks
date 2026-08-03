@@ -29,13 +29,14 @@ namespace TinyTweaks.Tweaks
         static TMP_FontAsset defaultFont = null;
         static TMP_FontAsset peakFont = null;
         static ConfigEntry<float> fontSize;
+        static ConfigEntry<HorizontalAlignmentOptions> textAlignment;
 
         public static void Binds()
         {
             var config = tinyTweaks.config;
             hideVersionText = config.Bind("Version", "Hide Version", false);
             moveVersionText = config.Bind("Version", "Move Version Text", true);
-            Xpos = config.Bind("Version", "X position", 615f, new ConfigDescription("", new AcceptableValueRange<float>(-2000f, 2000f)));
+            Xpos = config.Bind("Version", "X position", 890f, new ConfigDescription("", new AcceptableValueRange<float>(-2000f, 2000f)));
             Ypos = config.Bind("Version", "Y position", 540f, new ConfigDescription("", new AcceptableValueRange<float>(-2000f, 2000f)));
 
             moveAscentUI = config.Bind("Version", "Move Ascent Text", true);
@@ -43,6 +44,7 @@ namespace TinyTweaks.Tweaks
             YposAscent = config.Bind("Version", "Y position Ascent", 490f, new ConfigDescription("", new AcceptableValueRange<float>(-2000f, 2000f)));
             usePeakFont = config.Bind("Version", "Use Peak Font", true);
             fontSize = config.Bind("Version", "Font Size", 24f, new ConfigDescription("", new AcceptableValueRange<float>(0f, 100f)));
+            textAlignment = config.Bind("Version", "Text Alignment", HorizontalAlignmentOptions.Center);
         }
 
         void Start()
@@ -52,6 +54,7 @@ namespace TinyTweaks.Tweaks
             moveVersionText.SettingChanged += (_, _) => updateVersionText();
             Xpos.SettingChanged += (_, _) => updateVersionText();
             Ypos.SettingChanged += (_, _) => updateVersionText();
+            textAlignment.SettingChanged += (_, _) => updateVersionText();
             //AscentUI
             moveAscentUI.SettingChanged += (_, _) => moveAscentText();
             XposAscent.SettingChanged += (_, _) => moveAscentText();
@@ -94,15 +97,30 @@ namespace TinyTweaks.Tweaks
             }
             version.SetActive(true);
             TextMeshProUGUI tmpro = version.GetComponent<TextMeshProUGUI>();
+            RectTransform rectTransform = version.GetComponent<RectTransform>();
             if (moveVersionText.Value)
             {
-                tmpro.alignment = TextAlignmentOptions.Top;
-                tmpro.horizontalAlignment = HorizontalAlignmentOptions.Center;
+                tmpro.horizontalAlignment = textAlignment.Value;//TEST THIS
+                Vector2 pivot = rectTransform.pivot;
+                switch (textAlignment.Value)
+                {
+                    case HorizontalAlignmentOptions.Left:
+                        pivot.x = 0f;
+                        break;
+                    case HorizontalAlignmentOptions.Center:
+                        pivot.x = 0.5f;
+                        break;
+                    case HorizontalAlignmentOptions.Right:
+                        pivot.x = 1f;
+                        break;
+                }
+                rectTransform.pivot = pivot;
                 version.transform.localPosition = new Vector3(Xpos.Value, Ypos.Value, 0);
                 return;
             }
             tmpro.alignment = TextAlignmentOptions.TopLeft;
-            tmpro.horizontalAlignment = HorizontalAlignmentOptions.Left;
+            rectTransform.pivot = new Vector2(0f, 1f); // Default TopLeft pivot
+            //tmpro.horizontalAlignment = HorizontalAlignmentOptions.Left;
             version.transform.localPosition = previousPosVersion;
         }
 

@@ -2,7 +2,6 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
-using PhotonSpawner;
 using System.Reflection;
 using TinyTweaks.Tweaks;
 using UnityEngine;
@@ -10,10 +9,6 @@ using UnityEngine.SceneManagement;
 
 namespace TinyTweaks
 {
-    /// <summary>
-    /// TODO:
-    ///     Extra Marshmallows
-    /// </summary>
     [BepInAutoPlugin]
     [BepInDependency("com.borealityy.peaktextchat",BepInDependency.DependencyFlags.SoftDependency)]
     public partial class tinyTweaks : BaseUnityPlugin

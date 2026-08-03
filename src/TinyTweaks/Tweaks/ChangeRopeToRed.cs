@@ -7,7 +7,7 @@ using System.Text;
 using TinyTweaks;
 using UnityEngine;
 
-namespace PhotonSpawner
+namespace TinyTweaks.Tweaks
 {
     internal class ChangeRopeToRed
     {

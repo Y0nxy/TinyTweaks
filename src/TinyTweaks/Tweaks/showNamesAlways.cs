@@ -36,7 +36,7 @@ namespace TinyTweaks.Tweaks
                     return true;
                 }
 
-                if (__instance.playerNamePos == null || __instance.mouth == null)
+                if (__instance.playerNamePos == null || __instance.mouth == null || GUIManager.instance == null || GUIManager.instance.playerNames == null)
                 {
                     return true; // Avoid crashing on uninitialized/destroyed targets
                 }
