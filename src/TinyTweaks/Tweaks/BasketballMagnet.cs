@@ -11,7 +11,7 @@ namespace TinyTweaks.Tweaks
         private Rigidbody rb = null!;
         private PhotonView pv = null!;
         private BasketballHoop targetHoop;
-        private bool hasLeftHand;
+        public bool hasLeftHand;
         private bool hasExecutedLegitShot;
         private float lastForceTime = -1f;
 

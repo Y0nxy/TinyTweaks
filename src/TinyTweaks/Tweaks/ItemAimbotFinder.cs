@@ -1,5 +1,7 @@
 ﻿using BepInEx.Configuration;
+using HarmonyLib;
 using Photon.Pun;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -37,8 +39,19 @@ namespace TinyTweaks.Tweaks
             ShowVisualTargetMarker = config.Bind("Basketball", "Show Target Marker Sphere", true, "Spawns a temporary physical red marker sphere in-game where the calculation is aiming.");
             Basketball = config.Bind("Basketball", "Basketball ItemName", "Basketball", "The substring used to identify Basketball items in the scene.");
         }
-
-
+        [HarmonyPatch(typeof(Item))]
+        private static class FixDupingBasketballs
+        {
+            [HarmonyPatch("RequestPickup")]
+            [HarmonyPrefix]
+            private static bool onRequestPickup(Item __instance, PhotonView characterView)
+            {
+                //Fix Duping Basketballs
+                if (__instance.photonView.Owner != PhotonNetwork.MasterClient)
+                    __instance.photonView.TransferOwnership(PhotonNetwork.MasterClient);
+                return true;
+            }
+        }
         private void Update()
         {
             if (Time.time >= nextScanTime)
@@ -81,7 +94,7 @@ namespace TinyTweaks.Tweaks
                 if (itemName.Contains(Basketball.Value) && (EnableAssist.Value || RageAimbot.Value))
                 {
                     if (rb.linearVelocity.magnitude <= MinimumThrowSpeedBasketBall.Value) continue;
-
+                    if (pv.GetComponent<BasketballMagnet>() != null && !pv.GetComponent<BasketballMagnet>().hasLeftHand) continue;
                     if (!pv.IsMine)
                     {
                         if (!pendingRequests.Contains(pv.ViewID))

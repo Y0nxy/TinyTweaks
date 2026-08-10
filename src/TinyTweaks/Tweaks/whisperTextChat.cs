@@ -7,6 +7,7 @@ using HarmonyLib;
 using Photon.Chat;
 using Photon.Pun;
 using Photon.Realtime;
+using SCPE;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -18,9 +19,11 @@ namespace TinyTweaks.Tweaks
     internal class whisperTextChat
     {
         static ConfigEntry<bool> enableWhisperTextChat;
+        static ConfigEntry<bool> whisperForYouEveryMsg;
         public static void CheckforPeakTextChat(Harmony harmony)
         {
             enableWhisperTextChat = tinyTweaks.config.Bind("Shorties", "WhisperCmd", true);
+            whisperForYouEveryMsg = tinyTweaks.config.Bind("Shorties", "send a (secret msg for you) everytime", true);
             if (Chainloader.PluginInfos.ContainsKey("com.borealityy.peaktextchat"))
             {
                 tinyTweaks.log("found peaktextchat. Initializing patch!");
@@ -44,7 +47,7 @@ namespace TinyTweaks.Tweaks
             {
                 if (string.IsNullOrWhiteSpace(message) ||!enableWhisperTextChat.Value) return true; //if empty
                 string cmd = message.Split(' ')[0];
-                if (cmd.StartsWith("/w") || cmd.StartsWith("/whisper"))
+                if (cmd.StartsWith("/w", StringComparison.OrdinalIgnoreCase) || cmd.StartsWith("/whisper", StringComparison.OrdinalIgnoreCase))
                 {
                     string content = message.Substring(cmd.Length).Trim();
                     string[] args = content.Split(' ');
@@ -59,13 +62,22 @@ namespace TinyTweaks.Tweaks
                     Whisper($"{plr} {msg}");
                     return false;
                 }
+                else if (cmd.StartsWith("/sit"))
+                {
+                    var c = Character.localCharacter;
+                    if (c == null) return false;
+                    c.refs.view.RPC("RPCA_PlayRemove", RpcTarget.All, "A_Scout_Emote_Sit", false);
+                    tinyTweaks.log("played sit emote");
+                    return false;
+                }
                 return true;
             }
         }
         static void Whisper(Photon.Realtime.Player whisperTo, string msg)
         {
             bool isDead = false;
-            msg = $"<color=#8973a1>{msg} <size=16><i>(secret msg for you)</i></size></color>";
+            msg = $"<color=#8973a1>{msg} ";
+            msg = msg + (whisperForYouEveryMsg.Value ? $"<size=16><i>(secret msg for you)</i></size></color>" : "</color>");
 
             object[] array = new object[]
             {
