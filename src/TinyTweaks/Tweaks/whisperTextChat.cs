@@ -62,7 +62,7 @@ namespace TinyTweaks.Tweaks
                     Whisper($"{plr} {msg}");
                     return false;
                 }
-                else if (cmd.StartsWith("/sit"))
+                else if (cmd.StartsWith("/sit", StringComparison.OrdinalIgnoreCase))
                 {
                     var c = Character.localCharacter;
                     if (c == null) return false;

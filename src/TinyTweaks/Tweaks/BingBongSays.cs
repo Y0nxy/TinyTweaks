@@ -37,9 +37,6 @@ namespace TinyTweaks.Tweaks
                 if (bingBongAnswer.Value >= __instance.responses.Length)
                 {
                     bingBongAnswer.Value = __instance.responses.Length - 1;
-                    bingBongAnswer = config.Bind("BingBongSays", "BingBongAnswer(rounded down)", bingBongAnswer.Value, new ConfigDescription("The answer to the Bing Bong action. Min: 0, Max: " + (__instance.responses.Length - 1),
-                        new AcceptableValueRange<float>(0, __instance.responses.Length - 1)));
-                    config.Save();
                     bingBongAnswer.SettingChanged += (sender, e) =>
                     {
                         if (bingBongAnswer.Value % 1f != 0)

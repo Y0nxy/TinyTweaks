@@ -16,11 +16,12 @@ namespace TinyTweaks.Tweaks
         static ConfigEntry<bool> enableCampfireProtection;
         static ConfigEntry<float> hotdogPercent;
         static ConfigEntry<int> cheatMallows;
+        static ConfigEntry<int> extraMallowsPerScout;
 
         //other stuff
         public static Campfire nextCampfire;
         static List<GameObject> marshmallows = new List<GameObject>();
-        static List<PhotonView> charactersThatPickedUp = new List<PhotonView>();
+        static Dictionary<PhotonView, int> charactersThatPickedUp = new Dictionary<PhotonView, int>();
         static float radius = 2f;
         static int playerCount => PhotonNetwork.CurrentRoom.PlayerCount;
         static Vector3 originPoint => nextCampfire.transform.position;
@@ -36,6 +37,7 @@ namespace TinyTweaks.Tweaks
             enableExtraBackpacks = config.Bind("Campfire", "Extra Backpacks", false);
             enableCampfireProtection = config.Bind("Campfire", "Campfire Protection", true);
             hotdogPercent = config.Bind("Campfire", "Hotdog spawn chance", 33f, new ConfigDescription("from 0 to 100%", new AcceptableValueRange<float>(0f, 100f)));
+            extraMallowsPerScout = config.Bind("Campfire", "Extra Marshmallows per scout", 0, new ConfigDescription("0 disabled - to idk 21", new AcceptableValueRange<int>(0, 21)));
             cheatMallows = config.Bind("Campfire", "Cheat mallows", 0, new ConfigDescription("0 disabled - to 250", new AcceptableValueRange<int>(0, 250)));
         }
         [HarmonyPatch(typeof(MapHandler), "SpawnCampfireItems")]
@@ -101,13 +103,19 @@ namespace TinyTweaks.Tweaks
             {
                 if (!PhotonNetwork.IsMasterClient|| !enableExtraMarshmallows.Value) return true;
                 if (!marshmallows.Contains(__instance.gameObject)) return true;
-                if (charactersThatPickedUp.Contains(characterView))
+                if (charactersThatPickedUp.ContainsKey(characterView))
                 {
-                    tinyTweaks.log(characterView.name + " tried taking another Marshmallow! Unbelieveable...");
-                    __instance.view.RPC("DenyPickupRPC", characterView.Owner, Array.Empty<object>());
-                    return false;
+                    if (extraMallowsPerScout.Value == 0 || charactersThatPickedUp[characterView] >= extraMallowsPerScout.Value)
+                    {
+                        tinyTweaks.log(characterView.name + " tried taking another Marshmallow! Unbelieveable...");
+                        __instance.view.RPC("DenyPickupRPC", characterView.Owner, Array.Empty<object>());
+                        return false;
+                    }
                 }
-                charactersThatPickedUp.Add(characterView);
+                if (!charactersThatPickedUp.ContainsKey(characterView))
+                    charactersThatPickedUp.Add(characterView, 1);
+                else
+                    charactersThatPickedUp[characterView]++;
                 marshmallows.Remove(__instance.gameObject);
                 return true;
             }
@@ -143,7 +151,8 @@ namespace TinyTweaks.Tweaks
             marshmallows.Clear();
             tinyTweaks.log($"RefreshMarshmallows Called! Taken: {marshmallowsTaken}/{playerCount}");
             int partOfCircle = 0;
-            for (int i = 0; i < playerCount - marshmallowsTaken; i++)
+            int cap = extraMallowsPerScout.Value == 0 ? playerCount - marshmallowsTaken : playerCount * extraMallowsPerScout.Value - marshmallowsTaken;
+            for (int i = 0; i < cap; i++)
             {
                 SpawnMarshmallow(i);
                 partOfCircle = i;
