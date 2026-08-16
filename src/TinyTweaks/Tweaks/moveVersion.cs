@@ -30,6 +30,10 @@ namespace TinyTweaks.Tweaks
         static TMP_FontAsset peakFont = null;
         static ConfigEntry<float> fontSize;
         static ConfigEntry<HorizontalAlignmentOptions> textAlignment;
+        static ConfigEntry<string> versionTextColor;
+        static ConfigEntry<string> ascentTextColor;
+        static bool versionVisible = true;
+        static bool ascentVisible = true;
 
         public static void Binds()
         {
@@ -45,6 +49,8 @@ namespace TinyTweaks.Tweaks
             usePeakFont = config.Bind("Version", "Use Peak Font", true);
             fontSize = config.Bind("Version", "Font Size", 24f, new ConfigDescription("", new AcceptableValueRange<float>(0f, 100f)));
             textAlignment = config.Bind("Version", "Text Alignment", HorizontalAlignmentOptions.Center);
+            versionTextColor = config.Bind("Version", "Version Text Color", "DBD7BF");
+            ascentTextColor = config.Bind("Version", "Ascent Text Color", "DBD7BF");
         }
 
         void Start()
@@ -61,6 +67,8 @@ namespace TinyTweaks.Tweaks
             YposAscent.SettingChanged += (_, _) => moveAscentText();
             usePeakFont.SettingChanged += (_, _) => peakfontUpdate();
             fontSize.SettingChanged += (_, _) => peakfontUpdate();
+            versionTextColor.SettingChanged += (_, _) => updateVersionText();
+            ascentTextColor.SettingChanged += (_, _) => moveAscentText();
         }
 
         [HarmonyPatch]
@@ -98,10 +106,12 @@ namespace TinyTweaks.Tweaks
             version.SetActive(true);
             TextMeshProUGUI tmpro = version.GetComponent<TextMeshProUGUI>();
             RectTransform rectTransform = version.GetComponent<RectTransform>();
+            ApplyColor(tmpro, versionTextColor.Value);
             if (moveVersionText.Value)
             {
                 tmpro.horizontalAlignment = textAlignment.Value;//TEST THIS
                 Vector2 pivot = rectTransform.pivot;
+                pivot.y = 1f;
                 switch (textAlignment.Value)
                 {
                     case HorizontalAlignmentOptions.Left:
@@ -131,10 +141,25 @@ namespace TinyTweaks.Tweaks
             {
                 tinyTweaks.log("Moved AscentUI");
                 ascentUI.transform.localPosition = new Vector3(XposAscent.Value, YposAscent.Value, 0);
+                ApplyColor(ascentUI.GetComponent<TextMeshProUGUI>(), ascentTextColor.Value);
                 return;
             }
             ascentUI.transform.localPosition = previousPosAscent;
+            ApplyColor(ascentUI.GetComponent<TextMeshProUGUI>(), ascentTextColor.Value);
         }
+        static void ApplyColor(TextMeshProUGUI tmpro, string colorValue)
+        {
+            if (tmpro == null) return;
+
+            string normalized = colorValue?.Trim() ?? "FFFFFF";
+            if (normalized.StartsWith("#")) normalized = normalized.Substring(1);
+
+            if (ColorUtility.TryParseHtmlString("#" + normalized, out Color color))
+            {
+                tmpro.color = color;
+            }
+        }
+
         static void peakfontUpdate()
         {
             if (version == null) return;
