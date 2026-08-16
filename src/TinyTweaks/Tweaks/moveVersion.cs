@@ -32,8 +32,6 @@ namespace TinyTweaks.Tweaks
         static ConfigEntry<HorizontalAlignmentOptions> textAlignment;
         static ConfigEntry<string> versionTextColor;
         static ConfigEntry<string> ascentTextColor;
-        static bool versionVisible = true;
-        static bool ascentVisible = true;
 
         public static void Binds()
         {
