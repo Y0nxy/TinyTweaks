@@ -1,9 +1,4 @@
 ﻿using HarmonyLib;
-using Photon.Pun;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
 
 namespace TinyTweaks.Tweaks
 {

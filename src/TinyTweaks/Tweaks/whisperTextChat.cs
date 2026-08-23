@@ -1,16 +1,11 @@
 ﻿//using PeakTextChat;
 using BepInEx.Bootstrap;
 using BepInEx.Configuration;
-using ExitGames.Client;
 using ExitGames.Client.Photon;
 using HarmonyLib;
-using Photon.Chat;
 using Photon.Pun;
 using Photon.Realtime;
-using SCPE;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
 

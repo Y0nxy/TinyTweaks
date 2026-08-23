@@ -1,9 +1,5 @@
 ﻿using BepInEx.Configuration;
 using HarmonyLib;
-using pworld.Scripts;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
 
 namespace TinyTweaks.Tweaks

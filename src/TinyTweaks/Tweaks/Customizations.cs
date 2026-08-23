@@ -97,7 +97,7 @@ namespace TinyTweaks.Tweaks
 
         public static void Update()
         {
-            if (GUIManager.instance != null && GUIManager.instance.windowBlockingInput) return; //no keypress when typing in chat or using menus
+            //if (GUIManager.instance != null && GUIManager.instance.windowBlockingInput) return; //no keypress when typing in chat or using menus
 
             if (Input.GetKeyDown(deadEyesKey.Value)) DeadEyes.Value = true;
             if (Input.GetKeyDown(passedEyesKey.Value)) passedOutEyes.Value = true;
