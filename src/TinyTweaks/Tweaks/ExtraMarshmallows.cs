@@ -3,7 +3,6 @@ using HarmonyLib;
 using Photon.Pun;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using UnityEngine;
 
 namespace TinyTweaks.Tweaks
@@ -15,8 +14,10 @@ namespace TinyTweaks.Tweaks
         static ConfigEntry<bool> enableExtraBackpacks;
         static ConfigEntry<bool> enableCampfireProtection;
         static ConfigEntry<float> hotdogPercent;
+        static ConfigEntry<float> backpackPercent;
         static ConfigEntry<int> cheatMallows;
         static ConfigEntry<int> extraMallowsPerScout;
+        static ConfigEntry<bool> isCookedMarshmallow;
 
         //other stuff
         public static Campfire nextCampfire;
@@ -37,8 +38,10 @@ namespace TinyTweaks.Tweaks
             enableExtraBackpacks = config.Bind("Campfire", "Extra Backpacks", false);
             enableCampfireProtection = config.Bind("Campfire", "Campfire Protection", true);
             hotdogPercent = config.Bind("Campfire", "Hotdog spawn chance", 33f, new ConfigDescription("from 0 to 100%", new AcceptableValueRange<float>(0f, 100f)));
+            backpackPercent = config.Bind("Campfire", "Backpack spawn chance", 100f, new ConfigDescription("from 0 to 100%", new AcceptableValueRange<float>(0f, 100f)));
             extraMallowsPerScout = config.Bind("Campfire", "Extra Marshmallows per scout", 0, new ConfigDescription("0 disabled - to idk 21", new AcceptableValueRange<int>(0, 21)));
             cheatMallows = config.Bind("Campfire", "Cheat mallows", 0, new ConfigDescription("0 disabled - to 250", new AcceptableValueRange<int>(0, 250)));
+            isCookedMarshmallow = config.Bind("Campfire", "Cook Marshmallows", false);
         }
         [HarmonyPatch(typeof(MapHandler), "SpawnCampfireItems")]
         private class SetCampfire
@@ -58,9 +61,14 @@ namespace TinyTweaks.Tweaks
                     nextCampfire.gameObject.AddComponent<CampfireProtection>();
 
                 if (!PhotonNetwork.IsMasterClient) return true;
-                if (enableExtraBackpacks.Value)
+                if (enableExtraBackpacks.Value && backpackPercent.Value > 0)
                 {
-                    for (int i = 0; i < playerCount - marshmallowsTaken; i++)
+                    float cap = playerCount - marshmallowsTaken;
+                    if (backpackPercent.Value != 100f)
+                        cap *= backpackPercent.Value / 100f;
+
+                    int finalCap = Mathf.CeilToInt(cap);
+                    for (int i = 0; i < finalCap; i++)
                     {
                         SpawnExtraBackpacks(i);
                     }
@@ -186,6 +194,8 @@ namespace TinyTweaks.Tweaks
             if (UnityEngine.Random.value <= hotdogPercent.Value / 100) itemToSpawn = "0_Items/Glizzy";
             GameObject itemObj = PhotonNetwork.InstantiateRoomObject(itemToSpawn, spawnPosition, lookRotation);
             var item = itemObj.GetComponent<Item>();
+            if (isCookedMarshmallow.Value)
+                item.photonView.RPC("SetCookedAmountRPC", RpcTarget.All, 1);
             if (item != null) item.SetKinematicNetworked(true);
             if (isProtected)
                 marshmallows.Add(itemObj);

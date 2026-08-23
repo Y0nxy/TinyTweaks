@@ -50,6 +50,7 @@ namespace TinyTweaks
             noBonusStaminaFromJumps.Start();
             whisperTextChat.CheckforPeakTextChat(harmony);
             ChangeRopeToRed.Start();
+            LetMeLEAVE.Start();
         }
         public static void Notification(string message, string color = "FFFFFF", bool sound = false)
         {
@@ -81,13 +82,16 @@ namespace TinyTweaks
 
         void Update()
         {
+            if (GUIManager.instance != null && GUIManager.instance.windowBlockingInput) return; //no keypress when typing in chat or using menus
             Customizations.Update();
+            LetMeLEAVE.Update();
         }
         void OnDestroy()
         {
             if (harmony != null)
             {
                 harmony.UnpatchSelf();
+                SceneManager.sceneLoaded -= OnSceneChanged;
                 if (TweaksObj != null)
                     Destroy(TweaksObj);
                 log("Unloading mod " + Name);

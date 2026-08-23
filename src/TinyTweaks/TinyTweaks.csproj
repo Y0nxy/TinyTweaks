@@ -4,8 +4,8 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>YonDev.TinyTweaks</AssemblyName>
     <AssemblyTitle>TinyTweaks</AssemblyTitle>
+    <Version>1.1.0</Version>
 	<Nullable>disable</Nullable>
-    <Version>1.0.9</Version>
   </PropertyGroup>
 
   <!-- ThunderPipe properties -->
@@ -21,6 +21,10 @@
     <ThunderstoreCommunities>peak</ThunderstoreCommunities>
     <ThunderstoreCategories>mods</ThunderstoreCategories>
   </PropertyGroup>
+  <ItemGroup>
+    <Content Include="..\..\..\..\..\Desktop\My Mods\TinyTweaks\icon.png" Link="thunderstore\icon.png" />
+    <Content Include="..\..\..\..\..\Desktop\My Mods\TinyTweaks\manifest.json" Link="thunderstore\manifest.json" />
+  </ItemGroup>
 
   <!--
     Define mod files to copy to the relative BepInEx directory after build
@@ -43,6 +47,13 @@
     <ThunderstorePackageFile Include="$(SolutionRoot)LICENSE" />
 
     <ThunderstoreDependency Include="BepInEx-BepInExPack_PEAK" Version="5.4.75301" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="thunderstore\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\..\Desktop\My Mods\TinyTweaks\CHANGELOG.md" Link="thunderstore\CHANGELOG.md" />
+    <None Include="..\..\..\..\..\Desktop\My Mods\TinyTweaks\README.md" Link="thunderstore\README.md" />
   </ItemGroup>
 	<Target Name="CopyDllOnly" AfterTargets="Build">
 		<Copy SourceFiles="$(TargetDir)$(TargetName).dll" DestinationFolder="C:\Users\yonij\AppData\Roaming\com.kesomannen.gale\peak\profiles\modTesting\BepInEx\plugins\" SkipUnchangedFiles="true" />
