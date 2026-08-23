@@ -15,6 +15,7 @@ namespace TinyTweaks.Tweaks
         static ConfigEntry<bool> enableCampfireProtection;
         static ConfigEntry<float> hotdogPercent;
         static ConfigEntry<float> backpackPercent;
+        static ConfigEntry<float> fannypackChance;
         static ConfigEntry<int> cheatMallows;
         static ConfigEntry<int> extraMallowsPerScout;
         static ConfigEntry<bool> isCookedMarshmallow;
@@ -38,7 +39,8 @@ namespace TinyTweaks.Tweaks
             enableExtraBackpacks = config.Bind("Campfire", "Extra Backpacks", false);
             enableCampfireProtection = config.Bind("Campfire", "Campfire Protection", true);
             hotdogPercent = config.Bind("Campfire", "Hotdog spawn chance", 33f, new ConfigDescription("from 0 to 100%", new AcceptableValueRange<float>(0f, 100f)));
-            backpackPercent = config.Bind("Campfire", "Backpack spawn chance", 100f, new ConfigDescription("from 0 to 100%", new AcceptableValueRange<float>(0f, 100f)));
+            backpackPercent = config.Bind("Campfire", "Any Backpack spawn chance", 100f, new ConfigDescription("from 0 to 100%", new AcceptableValueRange<float>(0f, 100f)));
+            fannypackChance = config.Bind("Campfire", "Fannypack chance", 33f, new ConfigDescription("from 0 to 100%", new AcceptableValueRange<float>(0f, 100f)));
             extraMallowsPerScout = config.Bind("Campfire", "Extra Marshmallows per scout", 0, new ConfigDescription("0 disabled - to idk 21", new AcceptableValueRange<int>(0, 21)));
             cheatMallows = config.Bind("Campfire", "Cheat mallows", 0, new ConfigDescription("0 disabled - to 250", new AcceptableValueRange<int>(0, 250)));
             isCookedMarshmallow = config.Bind("Campfire", "Cook Marshmallows", false);
@@ -219,6 +221,7 @@ namespace TinyTweaks.Tweaks
             directionToCenter.y = 0;
             Quaternion lookRotation = Quaternion.LookRotation(directionToCenter) * Quaternion.Euler(0, -90, 0);
             string itemToSpawn = "0_Items/Backpack";
+            if (UnityEngine.Random.value <= fannypackChance.Value / 100) itemToSpawn = "0_Items/Fannypack";
             GameObject itemObj = PhotonNetwork.InstantiateRoomObject(itemToSpawn, spawnPosition, lookRotation);
         }
         static float CastToFloor(Vector3 spawnPosition)
