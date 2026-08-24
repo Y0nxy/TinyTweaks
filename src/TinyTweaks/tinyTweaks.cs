@@ -2,6 +2,7 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
+using Photon.Pun;
 using System.Reflection;
 using TinyTweaks.Tweaks;
 using UnityEngine;
@@ -32,7 +33,7 @@ namespace TinyTweaks
         {
             if (scene.name == "Title") return;
             TweaksObj = new GameObject("Tweaks!");
-            if (scene.name == "Airport")
+            if (scene.name == "Airport" && PhotonNetwork.IsConnected && PhotonNetwork.IsMasterClient)
             {
                 Log.LogInfo("In Airport! Loading Basketball Aimbot!");
                 TweaksObj.AddComponent<ItemAimbotFinder>();
@@ -51,6 +52,7 @@ namespace TinyTweaks
             whisperTextChat.CheckforPeakTextChat(harmony);
             ChangeRopeToRed.Start();
             LetMeLEAVE.Start();
+            daggerShieldPatch.Start();
         }
         public static void Notification(string message, string color = "FFFFFF", bool sound = false)
         {
