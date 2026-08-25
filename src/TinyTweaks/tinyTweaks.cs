@@ -106,7 +106,7 @@ namespace TinyTweaks
             yield return new WaitForSeconds(10);
             if (!PhotonNetwork.IsMasterClient) {
                 log($"Host is {PhotonNetwork.MasterClient}");
-                yield return null;
+                yield break;
             }
             log("Loading Basketball Aimbot!");
             TweaksObj.AddComponent<ItemAimbotFinder>();

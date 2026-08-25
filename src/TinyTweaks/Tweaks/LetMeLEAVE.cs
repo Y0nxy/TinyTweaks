@@ -8,6 +8,8 @@ namespace TinyTweaks.Tweaks
     {
         static ConfigEntry<KeyCode> leaveKeybind;
         static GameObject loadingScreen;
+        static float timeToHold = 5f;
+        static float timeHeld = 0f;
         
         [HarmonyPatch(typeof(LoadingScreen), "Awake")]
         static class patches
@@ -21,8 +23,12 @@ namespace TinyTweaks.Tweaks
         }
 
         public static void Update()
-        {
-            if (SceneManager.GetActiveScene().name != "Title" && Input.GetKeyDown(leaveKeybind.Value))
+        {//timetoHold =5f
+            if (SceneManager.GetActiveScene().name == "Title") return;
+            if (Input.GetKey(leaveKeybind.Value))
+                timeHeld += Time.deltaTime;
+            else timeHeld = 0;
+            if (timeHeld > timeToHold)
             {
                 Player.LeaveCurrentGame();
                 var text = loadingScreen?.transform.Find("LoadingText");
@@ -35,7 +41,7 @@ namespace TinyTweaks.Tweaks
                 {
                     black.gameObject.SetActive(false);
                 }
-
+                timeHeld = -999f;
                 //SceneManager.LoadScene("Title");
             }
         }
