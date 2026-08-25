@@ -3,6 +3,7 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using Photon.Pun;
+using System.Collections;
 using System.Reflection;
 using TinyTweaks.Tweaks;
 using UnityEngine;
@@ -33,10 +34,10 @@ namespace TinyTweaks
         {
             if (scene.name == "Title") return;
             TweaksObj = new GameObject("Tweaks!");
-            if (scene.name == "Airport" && PhotonNetwork.IsConnected && PhotonNetwork.IsMasterClient)
+            if (scene.name == "Airport")
             {
-                Log.LogInfo("In Airport! Loading Basketball Aimbot!");
-                TweaksObj.AddComponent<ItemAimbotFinder>();
+                log("In Airport!");
+                StartCoroutine(checkIsHostDelayed());
             }
             TweaksObj.AddComponent<moveVersion>();
         }
@@ -52,7 +53,7 @@ namespace TinyTweaks
             whisperTextChat.CheckforPeakTextChat(harmony);
             ChangeRopeToRed.Start();
             LetMeLEAVE.Start();
-            daggerShieldPatch.Start();
+            Shields.Start();
         }
         public static void Notification(string message, string color = "FFFFFF", bool sound = false)
         {
@@ -98,6 +99,17 @@ namespace TinyTweaks
                     Destroy(TweaksObj);
                 log("Unloading mod " + Name);
             }
+        }
+
+        IEnumerator checkIsHostDelayed()
+        {
+            yield return new WaitForSeconds(10);
+            if (!PhotonNetwork.IsMasterClient) {
+                log($"Host is {PhotonNetwork.MasterClient}");
+                yield return null;
+            }
+            log("Loading Basketball Aimbot!");
+            TweaksObj.AddComponent<ItemAimbotFinder>();
         }
     }
 }
