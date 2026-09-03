@@ -1,8 +1,12 @@
-﻿using System;
-using BepInEx.Configuration;
+﻿using BepInEx.Configuration;
+using HarmonyLib;
+using pworld.Scripts.Extensions;
+using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using HarmonyLib;
+using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 namespace TinyTweaks.Tweaks
 {
@@ -23,12 +27,15 @@ namespace TinyTweaks.Tweaks
         static Vector3 previousPosAscent;
 
         static ConfigEntry<bool> usePeakFont;
-        static TMP_FontAsset defaultFont = null;
+        //static TMP_FontAsset defaultFont = null;
+        static Dictionary<TextMeshProUGUI, TMP_FontAsset> defaultFonts = new Dictionary<TextMeshProUGUI, TMP_FontAsset>();
+
         static TMP_FontAsset peakFont = null;
         static ConfigEntry<float> fontSize;
-        static ConfigEntry<HorizontalAlignmentOptions> textAlignment;
+        static ConfigEntry<TextAlignment> textAlignment;
         static ConfigEntry<string> versionTextColor;
         static ConfigEntry<string> ascentTextColor;
+        static bool peaker = false;
 
         public static void Binds()
         {
@@ -36,14 +43,14 @@ namespace TinyTweaks.Tweaks
             hideVersionText = config.Bind("Version", "Hide Version", false);
             moveVersionText = config.Bind("Version", "Move Version Text", true);
             Xpos = config.Bind("Version", "X position", 890f, new ConfigDescription("", new AcceptableValueRange<float>(-2000f, 2000f)));
-            Ypos = config.Bind("Version", "Y position", 540f, new ConfigDescription("", new AcceptableValueRange<float>(-2000f, 2000f)));
+            Ypos = config.Bind("Version", "Y position", 545f, new ConfigDescription("", new AcceptableValueRange<float>(-2000f, 2000f)));
 
             moveAscentUI = config.Bind("Version", "Move Ascent Text", true);
-            XposAscent = config.Bind("Version", "X position Ascent", 955f, new ConfigDescription("", new AcceptableValueRange<float>(-2000f, 2000f)));
+            XposAscent = config.Bind("Version", "X position Ascent", 940f, new ConfigDescription("", new AcceptableValueRange<float>(-2000f, 2000f)));
             YposAscent = config.Bind("Version", "Y position Ascent", 490f, new ConfigDescription("", new AcceptableValueRange<float>(-2000f, 2000f)));
             usePeakFont = config.Bind("Version", "Use Peak Font", true);
             fontSize = config.Bind("Version", "Font Size", 24f, new ConfigDescription("", new AcceptableValueRange<float>(0f, 100f)));
-            textAlignment = config.Bind("Version", "Text Alignment", HorizontalAlignmentOptions.Center);
+            textAlignment = config.Bind("Version", "Text Alignment", TextAlignment.Center);
             versionTextColor = config.Bind("Version", "Version Text Color", "DBD7BF");
             ascentTextColor = config.Bind("Version", "Ascent Text Color", "DBD7BF");
         }
@@ -56,14 +63,15 @@ namespace TinyTweaks.Tweaks
             Xpos.SettingChanged += (_, _) => updateVersionText();
             Ypos.SettingChanged += (_, _) => updateVersionText();
             textAlignment.SettingChanged += (_, _) => updateVersionText();
+            versionTextColor.SettingChanged += (_, _) => updateVersionText();
+            fontSize.SettingChanged += (_, _) => updateVersionText();
+            usePeakFont.SettingChanged += (_, _) => updateVersionText();
             //AscentUI
             moveAscentUI.SettingChanged += (_, _) => moveAscentText();
             XposAscent.SettingChanged += (_, _) => moveAscentText();
             YposAscent.SettingChanged += (_, _) => moveAscentText();
-            usePeakFont.SettingChanged += (_, _) => peakfontUpdate();
-            fontSize.SettingChanged += (_, _) => peakfontUpdate();
-            versionTextColor.SettingChanged += (_, _) => updateVersionText();
             ascentTextColor.SettingChanged += (_, _) => moveAscentText();
+            defaultFonts.Clear();
         }
 
         [HarmonyPatch]
@@ -73,11 +81,19 @@ namespace TinyTweaks.Tweaks
             [HarmonyPostfix]
             static void setVersionObj(VersionString __instance)
             {
+                __instance.gameObject.AddComponent<moveVersion>();
                 version = __instance.gameObject;
+                if (version.transform.parent.name == "VersionStack")
+                {
+                    version = version.transform.parent.gameObject; // peaker check, WHY LAMMAS WHY!??!
+                    //tinyTweaks.log("peaker probably on, why did you change how label works lammas??");
+                    peaker = true;
+                }
                 previousPosVersion = version.transform.localPosition;
-                tinyTweaks.log("VersionString found!");
+                if (peaker)
+                    previousPosVersion = version.GetComponent<RectTransform>().localPosition;
+                tinyTweaks.log("VersionString found!" + (peaker ? " (PEAKER detected)" : ""));
                 updateVersionText();
-                peakfontUpdate();
             }
             [HarmonyPatch(typeof(AscentUI), "Start")]
             [HarmonyPostfix]
@@ -99,36 +115,90 @@ namespace TinyTweaks.Tweaks
                 return;
             }
             version.SetActive(true);
-            TextMeshProUGUI tmpro = version.GetComponent<TextMeshProUGUI>();
-            RectTransform rectTransform = version.GetComponent<RectTransform>();
+            if (peaker)
+            {
+                moveVersionTextAndAlign(version.transform.GetChild(0).gameObject);
+                tinyTweaks.Instance.StartCoroutine(WaitForPEAKtext());
+            }
+            else
+            {
+                moveVersionTextAndAlign(version);
+            }
+
+            
+            //tmpro.horizontalAlignment = HorizontalAlignmentOptions.Left;
+            if (!moveVersionText.Value)
+            {
+                if (peaker)
+                {
+                    version.GetComponent<RectTransform>().localPosition = previousPosVersion;
+                    version.GetComponent<VerticalLayoutGroup>().childAlignment = TextAnchor.UpperLeft;
+                    version.GetComponent<RectTransform>().pivot = new Vector2(0f, 1f); // Default TopLeft pivot
+                }
+                else
+                {
+                    version.transform.localPosition = previousPosVersion;
+                    version.GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.TopLeft;
+                    version.GetComponent<RectTransform>().pivot = new Vector2(0f, 1f); // Default TopLeft pivot
+                }
+            }
+        }
+        static void moveVersionTextAndAlign(GameObject ver)
+        {
+            TextMeshProUGUI tmpro = ver.GetComponent<TextMeshProUGUI>();
+            RectTransform rectTransform = ver.GetComponent<RectTransform>();
             ApplyColor(tmpro, versionTextColor.Value);
+            peakfontUpdate(tmpro);
             if (moveVersionText.Value)
             {
-                tmpro.horizontalAlignment = textAlignment.Value;//TEST THIS
-                Vector2 pivot = rectTransform.pivot;
-                pivot.y = 1f;
-                switch (textAlignment.Value)
+                if (peaker)
                 {
-                    case HorizontalAlignmentOptions.Left:
-                        pivot.x = 0f;
-                        break;
-                    case HorizontalAlignmentOptions.Center:
-                        pivot.x = 0.5f;
-                        break;
-                    case HorizontalAlignmentOptions.Right:
-                        pivot.x = 1f;
-                        break;
+                    var rect = version.GetComponent<RectTransform>();
+                    rect.localPosition = new Vector3(Xpos.Value, Ypos.Value, 0);
+                    var layoutGroup = version.GetComponent<VerticalLayoutGroup>();
+                    layoutGroup.childAlignment = TextAnchor.MiddleCenter;
+                    
+                    switch (textAlignment.Value)
+                    {
+                        case TextAlignment.Left:
+                            layoutGroup.childAlignment = TextAnchor.MiddleLeft;
+                            rect.pivot = new Vector2(0f, 1f); // TopLeft pivot
+                            break;
+                        case TextAlignment.Center:
+                            layoutGroup.childAlignment = TextAnchor.MiddleCenter;
+                            rect.pivot = new Vector2(0.5f, 1f); // TopCenter pivot
+                            break;
+                        case TextAlignment.Right:
+                            layoutGroup.childAlignment = TextAnchor.MiddleRight;
+                            rect.pivot = new Vector2(1f, 1f);
+                            break;
+                    }
                 }
-                rectTransform.pivot = pivot;
-                version.transform.localPosition = new Vector3(Xpos.Value, Ypos.Value, 0);
+                else
+                {
+                    Vector2 pivot = rectTransform.pivot;
+                    pivot.y = 1f;
+                    switch (textAlignment.Value)
+                    {
+                        case TextAlignment.Left:
+                            tmpro.horizontalAlignment = HorizontalAlignmentOptions.Left;
+                            pivot.x = 0f;
+                            break;
+                        case TextAlignment.Center:
+                            tmpro.horizontalAlignment = HorizontalAlignmentOptions.Center;
+                            pivot.x = 0.5f;
+                            break;
+                        case TextAlignment.Right:
+                            tmpro.horizontalAlignment = HorizontalAlignmentOptions.Right;
+                            pivot.x = 1f;
+                            break;
+                    }
+                    rectTransform.pivot = pivot;
+                    ver.transform.localPosition = new Vector3(Xpos.Value, Ypos.Value, 0);
+                }
                 return;
             }
-            tmpro.alignment = TextAlignmentOptions.TopLeft;
-            rectTransform.pivot = new Vector2(0f, 1f); // Default TopLeft pivot
-            //tmpro.horizontalAlignment = HorizontalAlignmentOptions.Left;
-            version.transform.localPosition = previousPosVersion;
         }
-
         static void moveAscentText()
         {
             if (ascentUI == null) return;
@@ -155,11 +225,10 @@ namespace TinyTweaks.Tweaks
             }
         }
 
-        static void peakfontUpdate()
+        static void peakfontUpdate(TextMeshProUGUI tmpro)
         {
-            if (version == null) return;
-            TextMeshProUGUI tmpro = version.GetComponent<TextMeshProUGUI>();
-            if (defaultFont == null) defaultFont = tmpro.font;
+            if (tmpro == null) return;
+            if (!defaultFonts.ContainsKey(tmpro)) defaultFonts.Add(tmpro, tmpro.font);
             if (usePeakFont.Value)
             {
                 if (peakFont == null)
@@ -171,8 +240,17 @@ namespace TinyTweaks.Tweaks
                 tmpro.fontSize = fontSize.Value;
                 return;
             }
-            tmpro.font = defaultFont;
+            tmpro.font = defaultFonts[tmpro];
             tmpro.fontSize = 18f;
+        }
+        static System.Collections.IEnumerator WaitForPEAKtext()
+        {
+            yield return new WaitForSeconds(5f);
+            var peakTextObj = version.transform.GetChild(1);
+            if (peakTextObj != null)
+            {
+                moveVersionTextAndAlign(peakTextObj.gameObject);
+            }
         }
     }
 }

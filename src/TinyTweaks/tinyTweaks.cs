@@ -19,8 +19,10 @@ namespace TinyTweaks
         public static  ConfigFile config;
         GameObject TweaksObj;
         Harmony harmony;
+        public static tinyTweaks Instance;
         private void Awake()
         {
+            Instance = this;
             Log = Logger;
             config = this.Config;
             SceneManager.sceneLoaded += OnSceneChanged;
