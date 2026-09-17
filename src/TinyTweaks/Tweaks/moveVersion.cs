@@ -117,8 +117,11 @@ namespace TinyTweaks.Tweaks
             version.SetActive(true);
             if (peaker)
             {
-                moveVersionTextAndAlign(version.transform.GetChild(0).gameObject);
-                tinyTweaks.Instance.StartCoroutine(WaitForPEAKtext());
+                if (version.transform.GetChild(0) != null)
+                {
+                    moveVersionTextAndAlign(version.transform.GetChild(0).gameObject);
+                    tinyTweaks.Instance.StartCoroutine(WaitForPEAKtext());
+                }
             }
             else
             {
