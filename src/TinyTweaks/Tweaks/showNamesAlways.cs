@@ -1,6 +1,5 @@
 ﻿using BepInEx.Configuration;
 using HarmonyLib;
-using System;
 using UnityEngine;
 
 namespace TinyTweaks.Tweaks

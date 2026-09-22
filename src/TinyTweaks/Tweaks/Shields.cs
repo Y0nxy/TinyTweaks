@@ -1,11 +1,6 @@
-﻿using BepInEx;
-using BepInEx.Configuration;
-using DG.Tweening.Plugins.Core;
+﻿using BepInEx.Configuration;
 using HarmonyLib;
 using Photon.Pun;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
 
 namespace TinyTweaks.Tweaks

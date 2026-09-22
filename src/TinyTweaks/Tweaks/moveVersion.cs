@@ -1,12 +1,10 @@
 ﻿using BepInEx.Configuration;
 using HarmonyLib;
-using pworld.Scripts.Extensions;
 using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.UIElements;
 
 namespace TinyTweaks.Tweaks
 {
@@ -250,7 +248,7 @@ namespace TinyTweaks.Tweaks
         {
             yield return new WaitForSeconds(5f);
             var peakTextObj = version.transform.GetChild(1);
-            if (peakTextObj != null)
+            if (peakTextObj != null && peakTextObj.gameObject != null)
             {
                 moveVersionTextAndAlign(peakTextObj.gameObject);
             }

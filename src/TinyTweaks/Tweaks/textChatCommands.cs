@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace TinyTweaks.Tweaks
 {
-    internal class whisperTextChat
+    internal class textChatCommands
     {
         static ConfigEntry<bool> enableWhisperTextChat;
         static ConfigEntry<bool> whisperForYouEveryMsg;
@@ -62,6 +62,7 @@ namespace TinyTweaks.Tweaks
                     var c = Character.localCharacter;
                     if (c == null) return false;
                     c.refs.view.RPC("RPCA_PlayRemove", RpcTarget.All, "A_Scout_Emote_Sit", false);
+                    c.refs.animations.PlayEmote("A_Scout_Emote_Sit");
                     tinyTweaks.log("played sit emote");
                     return false;
                 }

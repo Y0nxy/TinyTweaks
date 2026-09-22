@@ -52,7 +52,7 @@ namespace TinyTweaks
             moveVersion.Binds();
             BingBongSays.Start();
             noBonusStaminaFromJumps.Start();
-            whisperTextChat.CheckforPeakTextChat(harmony);
+            textChatCommands.CheckforPeakTextChat(harmony);
             ChangeRopeToRed.Start();
             LetMeLEAVE.Start();
             Shields.Start();
