@@ -1,5 +1,6 @@
 ﻿using BepInEx.Configuration;
 using HarmonyLib;
+using System;
 using UnityEngine;
 
 namespace TinyTweaks.Tweaks
@@ -49,9 +50,7 @@ namespace TinyTweaks.Tweaks
                     visible = DisplayWhenBlind.Value; //DisplayWhenBlind
                 }
 
-                var indexField = AccessTools.Field(typeof(IsLookedAt), "index");
-                if (indexField == null) return true;
-                var index = (int)indexField.GetValue(__instance);
+                var index = __instance.index;
                 GUIManager.instance.playerNames.UpdateName(index, __instance.playerNamePos.position, visible, __instance.mouth.amplitudeIndex);
                 return false;
             }
