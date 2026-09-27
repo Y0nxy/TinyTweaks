@@ -34,7 +34,11 @@ namespace TinyTweaks
 
         void OnSceneChanged(Scene scene, LoadSceneMode mode)
         {
-            if (scene.name == "Title") return;
+            if (scene.name == "Title")
+            {
+                LoadingScreenHandler.loading = false;
+                return;
+            }
             TweaksObj = new GameObject("Tweaks!");
             if (scene.name == "Airport")
             {
