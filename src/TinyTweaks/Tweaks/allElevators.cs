@@ -51,7 +51,7 @@ namespace TinyTweaks.Tweaks
 
             var position = new Vector3(xPos, 1.8f, 50.5f);
             character.photonView.RPC("WarpPlayerRPC", RpcTarget.All, position, false);
-            //tinyTweaks.logMessage($"tp player: {character.name} to index: {index}. pos is: {position}");
+            tinyTweaks.log($"tp player: {character.name} to index: {index}");//. pos is: {position}");
         }
     }
 }
