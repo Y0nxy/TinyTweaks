@@ -42,9 +42,11 @@ namespace TinyTweaks
             TweaksObj = new GameObject("Tweaks!");
             if (scene.name == "Airport")
             {
+                allElevators.inAirport = true;
                 log("In Airport!");
                 StartCoroutine(checkIsHostDelayed());
             }
+            else allElevators.inAirport = false;
             TweaksObj.AddComponent<moveVersion>();
         }
         private void StartTweaks()
@@ -60,6 +62,7 @@ namespace TinyTweaks
             ChangeRopeToRed.Start();
             LetMeLEAVE.Start();
             Shields.Start();
+            allElevators.Binds();
         }
         public static void Notification(string message, string color = "FFFFFF", bool sound = false)
         {
@@ -88,7 +91,7 @@ namespace TinyTweaks
         {
             Log.LogInfo(message);
         }
-
+        public static void logMessage(string message) => textChatCommands.logMessage(message);
         void Update()
         {
             if (GUIManager.instance != null && GUIManager.instance.windowBlockingInput) return; //no keypress when typing in chat or using menus

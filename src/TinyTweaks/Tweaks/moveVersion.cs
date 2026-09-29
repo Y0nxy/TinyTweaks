@@ -247,7 +247,7 @@ namespace TinyTweaks.Tweaks
         static System.Collections.IEnumerator WaitForPEAKtext()
         {
             yield return new WaitForSeconds(5f);
-            var peakTextObj = version.transform.GetChild(1);
+            var peakTextObj = version?.transform?.GetChild(1);
             if (peakTextObj != null && peakTextObj.gameObject != null)
             {
                 moveVersionTextAndAlign(peakTextObj.gameObject);
