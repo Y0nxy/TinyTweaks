@@ -42,7 +42,7 @@ namespace TinyTweaks.Tweaks
             {
                 if (string.IsNullOrWhiteSpace(message) ||!enableWhisperTextChat.Value) return true; //if empty
                 string cmd = message.Split(' ')[0];
-                if (cmd.StartsWith("/w ", StringComparison.OrdinalIgnoreCase) || cmd.StartsWith("/whisper ", StringComparison.OrdinalIgnoreCase))
+                if (cmd.StartsWith("/w", StringComparison.OrdinalIgnoreCase) || cmd.StartsWith("/whisper", StringComparison.OrdinalIgnoreCase))
                 {
                     string content = message.Substring(cmd.Length).Trim();
                     string[] args = content.Split(' ');
