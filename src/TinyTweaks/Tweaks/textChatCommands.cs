@@ -1,6 +1,4 @@
-﻿//using PeakTextChat;
-using BepInEx.Bootstrap;
-using BepInEx.Configuration;
+﻿using BepInEx.Configuration;
 using ExitGames.Client.Photon;
 using HarmonyLib;
 using Photon.Pun;
@@ -15,30 +13,28 @@ namespace TinyTweaks.Tweaks
     {
         static ConfigEntry<bool> enableWhisperTextChat;
         static ConfigEntry<bool> whisperForYouEveryMsg;
-        public static void CheckforPeakTextChat(Harmony harmony)
+        public static void Binds(Harmony harmony)
         {
             enableWhisperTextChat = tinyTweaks.config.Bind("Shorties", "WhisperCmd", true);
             whisperForYouEveryMsg = tinyTweaks.config.Bind("Shorties", "send a (secret msg for you) everytime", true);
-            if (Chainloader.PluginInfos.ContainsKey("com.borealityy.peaktextchat"))
+            tinyTweaks.log("found peaktextchat. Initializing patch!");
+
+            var sendChatMessageMethod = AccessTools.Method(typeof(PeakTextChat.TextChatManager), "SendChatMessage");
+            var SlashCommandMethod = AccessTools.Method(typeof(InterceptMessage), "SlashCommand");
+            if (sendChatMessageMethod == null || SlashCommandMethod == null)
             {
-                tinyTweaks.log("found peaktextchat. Initializing patch!");
-                var sendChatMessageMethod = AccessTools.Method("PeakTextChat.TextChatManager:SendChatMessage");
-                var SlashCommandMethod = new HarmonyMethod(AccessTools.Method(typeof(InterceptMessage), ("SlashCommand")));
-                if (sendChatMessageMethod == null || SlashCommandMethod == null)
-                {
-                    tinyTweaks.log(sendChatMessageMethod==null?"didn't find peaktextchat method":"didn't find whisper method");
-                    return;
-                }
-                harmony.Patch(sendChatMessageMethod,prefix:SlashCommandMethod);
+                tinyTweaks.log(sendChatMessageMethod==null?"didn't find peaktextchat method":"didn't find whisper method");
+                return;
             }
+            harmony.Patch(sendChatMessageMethod,prefix: new HarmonyMethod(SlashCommandMethod));
         }
 
         static byte chatEventCode = 81;
         static class InterceptMessage
         {
             //[HarmonyPatch(typeof(TextChatManager), "SendChatMessage")]
-            [HarmonyPrefix]
-            static bool SlashCommand(string message)
+            //[HarmonyPrefix]
+            static public bool SlashCommand(string message)
             {
                 if (string.IsNullOrWhiteSpace(message) ||!enableWhisperTextChat.Value) return true; //if empty
                 string cmd = message.Split(' ')[0];
@@ -99,26 +95,15 @@ namespace TinyTweaks.Tweaks
         }
         public static void logMessage(string message)
         {
-            //var logMethod = AccessTools.Method("PeakTextChat.TextChatDisplay.instance:AddMessage");
-            //if (logMethod == null) {
-            //    Plugin.log("logMethod could not be found");
-            //    return;
-            //}
-            //logMethod.Invoke(message);
-            var logMethod = AccessTools.Method("PeakTextChat.TextChatDisplay:AddMessage", new Type[] { typeof(string) });
-            Type type = AccessTools.TypeByName("PeakTextChat.TextChatDisplay");
-            var instance = type != null ? AccessTools.Field(type, "instance")?.GetValue(null) : null;
-
-
-            if (logMethod != null && instance != null)
+            var instance = PeakTextChat.TextChatDisplay.instance;
+            if (instance != null)
             {
-                logMethod.Invoke(instance, new object[] { message });
+                instance.AddMessage(message);
             }
             else
             {
-                tinyTweaks.log("logMethod could not be found");
+                tinyTweaks.log("instance could not be found");
             }
-            //PeakTextChat.TextChatDisplay.instance.AddMessage(message);
         }
         static string returnNameWithColor(Photon.Realtime.Player plr)
         {

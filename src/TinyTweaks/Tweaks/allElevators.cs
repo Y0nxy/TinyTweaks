@@ -10,13 +10,13 @@ namespace TinyTweaks.Tweaks
         static int lastIndex = 0;
         public static bool inAirport = false;
         static ConfigEntry<bool> randomElevators;
-        static ConfigEntry<bool> spacedElevators;
+        static ConfigEntry<bool> spawnInOrder;
         static readonly float[] points = new float[] { -15f, -9.5f, -4.1f, 1.5f };
 
         public static void Binds()
         {
-            randomElevators = tinyTweaks.config.Bind("Shorties", "Random Elevators", true);
-            spacedElevators = tinyTweaks.config.Bind("Shorties", "In Order Elevators", false);
+            randomElevators = tinyTweaks.config.Bind("Shorties", "Random Elevators", false);
+            spawnInOrder = tinyTweaks.config.Bind("Shorties", "In Order Elevators", false);
         }
         [HarmonyPatch]
         static class patch
@@ -26,7 +26,7 @@ namespace TinyTweaks.Tweaks
             static void spawnInElevator(Character __instance)
             {
                 //tinyTweaks.logMessage($"StartCharacter");
-                if (!inAirport ||!PhotonNetwork.IsMasterClient ||(!randomElevators.Value && !spacedElevators.Value)) return;
+                if (!inAirport ||!PhotonNetwork.IsMasterClient ||(!randomElevators.Value && !spawnInOrder.Value)) return;
                 if (__instance != null)
                     MoveCharacterToElevator(__instance);
             }

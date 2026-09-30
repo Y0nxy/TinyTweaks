@@ -1,4 +1,5 @@
 using BepInEx;
+using BepInEx.Bootstrap;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
@@ -20,6 +21,7 @@ namespace TinyTweaks
         GameObject TweaksObj;
         Harmony harmony;
         public static tinyTweaks Instance;
+        static bool hasPeakTextChat = false;
         private void Awake()
         {
             Instance = this;
@@ -58,7 +60,11 @@ namespace TinyTweaks
             moveVersion.Binds();
             BingBongSays.Start();
             noBonusStaminaFromJumps.Start();
-            textChatCommands.CheckforPeakTextChat(harmony);
+            if (Chainloader.PluginInfos.ContainsKey("com.borealityy.peaktextchat"))
+            {
+                hasPeakTextChat = true;
+                textChatCommands.Binds(harmony);
+            }
             ChangeRopeToRed.Start();
             LetMeLEAVE.Start();
             Shields.Start();
@@ -91,7 +97,13 @@ namespace TinyTweaks
         {
             Log.LogInfo(message);
         }
-        public static void logMessage(string message) => textChatCommands.logMessage(message);
+        public static void logMessage(string message)
+        {
+            if (hasPeakTextChat)
+                textChatCommands.logMessage(message);
+            else
+                log("no peaktextChat, msg: " + message);
+        }
         void Update()
         {
             if (GUIManager.instance != null && GUIManager.instance.windowBlockingInput) return; //no keypress when typing in chat or using menus
