@@ -88,7 +88,7 @@ namespace TinyTweaks.Tweaks
         static void Whisper(string content)
         {
             var plr = content.Split(' ')[0];
-            var msg = content.Substring(plr.Length);
+            var msg = content.Substring(plr.Length).TrimStart();
             var playerToWhisperTo = returnPlayerFromString(plr);
             if (playerToWhisperTo == null) return;
             Whisper(playerToWhisperTo, msg);
@@ -117,7 +117,7 @@ namespace TinyTweaks.Tweaks
             name += $"<color=#{color}>{plr.NickName}</color>";
             return name;
         }
-        static Character returnCharacter(Photon.Realtime.Player player)
+        static Character returnCharacter(Photon.Realtime.Player plr)
         {
             foreach (Character c in Character.AllCharacters)
             {
@@ -125,22 +125,35 @@ namespace TinyTweaks.Tweaks
 
                 if (photonView != null || c != null && c.transform.Find("Scout") != null && c.enabled == true)
                 {
-                    if (photonView.Owner == player)
+                    if (photonView.Owner == plr)
                         return c;
                 }
             }
             return null;
         }
-        static Photon.Realtime.Player returnPlayerFromString(string id)
+        static Photon.Realtime.Player returnPlayerFromString(string playerName)//not case sensitive
         {
-            foreach (Photon.Realtime.Player plr in PhotonNetwork.PlayerList)
+            Photon.Realtime.Player closestPlayer = null;
+            int closestLength = 0;
+            foreach (Photon.Realtime.Player c in PhotonNetwork.CurrentRoom.Players.Values)
             {
-                string cleanName = Regex.Replace(plr.NickName.ToLower(), @"</?color(=\w+|=[#\w]+)?>", string.Empty, RegexOptions.IgnoreCase);
-                if (cleanName.Contains(id, StringComparison.OrdinalIgnoreCase))
-                    return plr;
+                string cleanName = Regex.Replace(c.NickName.ToLower(), @"</?color(=\w+|=[#\w]+)?>", string.Empty, RegexOptions.IgnoreCase);
+                //logMessage("player is: " + cleanName);
+
+                if (cleanName.Contains(playerName.ToLower()))
+                {
+                    var length = cleanName.Length;
+                    if (closestPlayer == null || length < closestLength)
+                    {
+                        closestPlayer = c;
+                        closestLength = length;
+                        //logMessage("closest player is: " + cleanName);
+                    }
+                }
             }
-            logMessage("player not found!");
-            return null;
+            if (closestPlayer == null)
+                logMessage("player not found!");
+            return closestPlayer;
         }
     }
 }
