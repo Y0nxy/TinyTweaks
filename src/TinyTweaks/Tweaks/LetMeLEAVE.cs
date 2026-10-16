@@ -2,6 +2,7 @@
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+
 namespace TinyTweaks.Tweaks
 {
     internal class LetMeLEAVE
@@ -25,6 +26,16 @@ namespace TinyTweaks.Tweaks
         public static void Update()
         {//timetoHold =5f
             if (SceneManager.GetActiveScene().name == "Title") return;
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                if (Character.localCharacter == null)
+                {
+                    tinyTweaks.log("localCharacter is null, pause menu toggle");
+                    var pauseMenu = GameObject.Find("GAME/GUIManager/PauseMenu");
+                    if (pauseMenu != null)
+                        pauseMenu.SetActive(!pauseMenu.activeInHierarchy);
+                }
+            }
             if (Input.GetKey(leaveKeybind.Value))
                 timeHeld += Time.deltaTime;
             else timeHeld = 0;

@@ -70,6 +70,7 @@ namespace TinyTweaks
             Shields.Start();
             allElevators.Binds();
             removePromptNameOrGlow.Binds();
+            AnimationOverride.Binds();
         }
         public static void Notification(string message, string color = "FFFFFF", bool sound = false)
         {
@@ -110,6 +111,7 @@ namespace TinyTweaks
             LetMeLEAVE.Update();
             if (GUIManager.instance != null && GUIManager.instance.windowBlockingInput) return; //no keypress when typing in chat or using menus
             Customizations.Update();
+            //AnimationOverride.Update();
         }
         void OnDestroy()
         {

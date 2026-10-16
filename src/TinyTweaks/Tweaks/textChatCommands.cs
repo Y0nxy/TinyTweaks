@@ -38,7 +38,7 @@ namespace TinyTweaks.Tweaks
             {
                 if (string.IsNullOrWhiteSpace(message) ||!enableWhisperTextChat.Value) return true; //if empty
                 string cmd = message.Split(' ')[0];
-                if (cmd.StartsWith("/w", StringComparison.OrdinalIgnoreCase) || cmd.StartsWith("/whisper", StringComparison.OrdinalIgnoreCase))
+                if (cmd.Equals("/w", StringComparison.OrdinalIgnoreCase) || cmd.Equals("/whisper", StringComparison.OrdinalIgnoreCase))
                 {
                     string content = message.Substring(cmd.Length).Trim();
                     string[] args = content.Split(' ');
@@ -53,13 +53,22 @@ namespace TinyTweaks.Tweaks
                     Whisper($"{plr} {msg}");
                     return false;
                 }
-                else if (cmd.StartsWith("/sit", StringComparison.OrdinalIgnoreCase))
+                else if (cmd.Equals("/sit", StringComparison.OrdinalIgnoreCase))
                 {
                     var c = Character.localCharacter;
                     if (c == null) return false;
                     c.refs.view.RPC("RPCA_PlayRemove", RpcTarget.All, "A_Scout_Emote_Sit", false);
                     c.refs.animations.PlayEmote("A_Scout_Emote_Sit");
                     tinyTweaks.log("played sit emote");
+                    return false;
+                }
+                else if (cmd.Equals("/ohno", StringComparison.OrdinalIgnoreCase))
+                {
+                    var c = Character.localCharacter;
+                    if (c == null) return false;
+                    c.refs.view.RPC("RPCA_PlayRemove", RpcTarget.All, "A_Scout_Emote_Panic", false);
+                    c.refs.animations.PlayEmote("A_Scout_Emote_Panic");
+                    tinyTweaks.log("played oh no emote");
                     return false;
                 }
                 return true;
