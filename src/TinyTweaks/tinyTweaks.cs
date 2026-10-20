@@ -111,7 +111,7 @@ namespace TinyTweaks
             LetMeLEAVE.Update();
             if (GUIManager.instance != null && GUIManager.instance.windowBlockingInput) return; //no keypress when typing in chat or using menus
             Customizations.Update();
-            //AnimationOverride.Update();
+            AnimationOverride.Update();
         }
         void OnDestroy()
         {

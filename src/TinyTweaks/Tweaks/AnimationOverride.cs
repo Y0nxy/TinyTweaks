@@ -21,6 +21,7 @@ namespace TinyTweaks.Tweaks
             }
         }
         static ConfigEntry<bool> overrideAnimations;
+        static ConfigEntry<KeyCode> overrideKey;
         static ConfigEntry<ScoutAnimations> idle;
         static ConfigEntry<ScoutAnimations> sprinting;
         static ConfigEntry<ScoutAnimations> walkingForward;
@@ -36,10 +37,11 @@ namespace TinyTweaks.Tweaks
             ScoutAnimations.DontApply, ScoutAnimations.DontApply, ScoutAnimations.DontApply};
         public static void Binds()
         {
-            overrideAnimations = tinyTweaks.config.Bind("Animation", "Override Animations", true);
-            useZombiePreset = tinyTweaks.config.Bind("Animation", "Zombie Preset", true);
+            overrideAnimations = tinyTweaks.config.Bind("Animation", "Override Animations", false);
+            overrideKey = tinyTweaks.config.Bind("Animation", "Override Animations Key", KeyCode.None);
+            useZombiePreset = tinyTweaks.config.Bind("Animation", "Zombie Preset", false);
             idle = tinyTweaks.config.Bind("Animation", "Idle Animation", ScoutAnimations.A_Scout_Swim_Idle);
-            sprinting = tinyTweaks.config.Bind("Animation", "Sprinting Animation", ScoutAnimations.A_Scout_Emote_Panic);
+            sprinting = tinyTweaks.config.Bind("Animation", "Sprinting Animation", ScoutAnimations.A_Scout_Sprint_Lean_F);
             walkingForward = tinyTweaks.config.Bind("Animation", "Walking Forward Animation", ScoutAnimations.A_Scout_Swim_FWD);
             walkingBackward = tinyTweaks.config.Bind("Animation", "Walking Backward Animation", ScoutAnimations.A_Scout_Swim_Back);
             walkingRight = tinyTweaks.config.Bind("Animation", "Walking Right Animation", ScoutAnimations.A_Scout_Swim_R);
@@ -55,12 +57,23 @@ namespace TinyTweaks.Tweaks
             walkingLeft.SettingChanged += (_, __) => updatePresets();
             updatePresets();
         }
+        public static void Update()
+        {
+            if (Input.GetKeyDown(overrideKey.Value))
+            {
+                overrideAnimations.Value = !overrideAnimations.Value;
+                tinyTweaks.Notification($"Animations key pressed, turning "+ (overrideAnimations.Value? "On" :"Off")+ "!");
+            }
+        }
 
         private static void updatePresets()
         {
             defaultPreset = new ScoutAnimations[6] {idle.Value, sprinting.Value, walkingForward.Value, walkingBackward.Value, walkingRight.Value, walkingLeft.Value};
+            if (overrideAnimations.Value)
+                setPreset(defaultPreset);
+            else playAnimation(ScoutAnimations.DontApply);
             if (useZombiePreset.Value) setPreset(zombiePreset);
-            else setPreset(defaultPreset);
+
         }
 
         static void setPreset(ScoutAnimations[] newPreset)
