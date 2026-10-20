@@ -37,7 +37,8 @@ namespace TinyTweaks.Tweaks
             [HarmonyPrefix]
             public static void TrackEmote(CharacterAnimations __instance, string emoteName)
             {
-                emotingPlayers[__instance] = emoteName;
+                if (emotesToKeepLonger.Contains(emoteName))
+                    emotingPlayers[__instance] = emoteName;
             }
 
             // if sit and not moving, don't continue the sinceEmoteStart, so it doesn't stop
@@ -47,7 +48,8 @@ namespace TinyTweaks.Tweaks
             {
                 if (!__instance.emoting) return;
                 //if (!sittingPlayers.ContainsKey(__instance) || !sittingPlayers[__instance].Equals(sitEmote)) return;
-                if (!emotingPlayers.ContainsKey(__instance) || !emotesToKeepLonger.Contains(emotingPlayers[__instance])) return;
+                //if (!emotingPlayers.ContainsKey(__instance) || !emotesToKeepLonger.Contains(emotingPlayers[__instance])) return;
+                if (!emotingPlayers.ContainsKey(__instance)) return;
                 var c = __instance.character;
                 if (c.input.movementInput.magnitude > 0.1f || c.input.jumpWasPressed || c.data.sinceGrounded > 0.2f) return;
                 __instance.sinceEmoteStart = 0;

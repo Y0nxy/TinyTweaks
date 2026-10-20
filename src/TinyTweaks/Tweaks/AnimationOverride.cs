@@ -248,7 +248,7 @@ namespace TinyTweaks.Tweaks
                 }
             }
         }
-        enum ScoutAnimations
+        public enum ScoutAnimations
         {
             DontApply,
             A_Scout_Climb_Down,
