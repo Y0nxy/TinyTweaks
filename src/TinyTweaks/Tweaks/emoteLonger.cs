@@ -39,6 +39,11 @@ namespace TinyTweaks.Tweaks
             {
                 if (emotesToKeepLonger.Contains(emoteName))
                     emotingPlayers[__instance] = emoteName;
+                else
+                {
+                    if (emotingPlayers.ContainsKey(__instance))
+                        emotingPlayers.Remove(__instance);
+                }
             }
 
             // if sit and not moving, don't continue the sinceEmoteStart, so it doesn't stop
