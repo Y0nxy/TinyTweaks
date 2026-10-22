@@ -268,7 +268,7 @@ namespace TinyTweaks.Tweaks
             A_Scout_Crouch_HelpFriend,
             A_Scout_Crouch_LFT,
             A_Scout_Crouch_RGT,
-            A_Scout_Emote_BackFlip,
+            //A_Scout_Emote_BackFlip,
             A_Scout_Emote_Cinema,
             A_Scout_Emote_Clap,
             A_Scout_Emote_Crashout,

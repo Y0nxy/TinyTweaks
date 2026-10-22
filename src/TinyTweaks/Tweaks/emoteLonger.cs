@@ -14,25 +14,6 @@ namespace TinyTweaks.Tweaks
         [HarmonyPatch]
         private class Patcher
         {
-            [HarmonyPatch(typeof(Character), "CreateHelperObjects")]
-            [HarmonyPostfix]
-            public static void CharacterUpdateAnims(Character __instance)
-            {
-                List<KeyValuePair<AnimationClip, AnimationClip>> clips = new List<KeyValuePair<AnimationClip, AnimationClip>>();
-                AnimatorOverrideController overrideController = new AnimatorOverrideController();
-                overrideController.runtimeAnimatorController = __instance.refs.animator.runtimeAnimatorController;
-                //foreach (AnimationClip originalClip in overrideController.animationClips.Where<AnimationClip>((AnimationClip o) => o.name.Equals(sitEmote)))
-                foreach (AnimationClip originalClip in overrideController.animationClips.Where<AnimationClip>((AnimationClip o) => emotesToKeepLonger.Contains(o.name)))
-                {
-                    AnimationClip newClip = UnityEngine.Object.Instantiate<AnimationClip>(originalClip);
-                    newClip.wrapMode = WrapMode.Loop;
-                    clips.Add(new KeyValuePair<AnimationClip, AnimationClip>(originalClip, newClip));
-                }
-                overrideController.ApplyOverrides(clips);
-                __instance.refs.animator.runtimeAnimatorController = overrideController;
-            }
-
-            // Capture which emote is currently being triggered
             [HarmonyPatch(typeof(CharacterAnimations), "RPCA_PlayRemove")]
             [HarmonyPrefix]
             public static void TrackEmote(CharacterAnimations __instance, string emoteName)
