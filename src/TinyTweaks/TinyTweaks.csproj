@@ -22,7 +22,6 @@
     <ThunderstoreCategories>mods</ThunderstoreCategories>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="..\..\..\..\..\Desktop\My Mods\TinyTweaks\icon.png" Link="thunderstore\icon.png" />
     <Content Include="..\..\..\..\..\Desktop\My Mods\TinyTweaks\manifest.json" Link="thunderstore\manifest.json" />
   </ItemGroup>
 
@@ -52,7 +51,6 @@
     <Folder Include="thunderstore\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\..\..\Desktop\My Mods\TinyTweaks\CHANGELOG.md" Link="thunderstore\CHANGELOG.md" />
     <None Include="..\..\..\..\..\Desktop\My Mods\TinyTweaks\README.md" Link="thunderstore\README.md" />
   </ItemGroup>
 	<Target Name="CopyDllOnly" AfterTargets="Build">

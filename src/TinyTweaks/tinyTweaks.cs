@@ -49,7 +49,7 @@ namespace TinyTweaks
                 StartCoroutine(checkIsHostDelayed());
             }
             else allElevators.inAirport = false;
-            TweaksObj.AddComponent<moveVersion>();
+            TweaksObj.AddComponent<moveAscent>();
         }
         private void StartTweaks()
         {
@@ -57,7 +57,6 @@ namespace TinyTweaks
             ExtraMarshmallows.Start();
             ItemAimbotFinder.Binds();
             showNamesAlways.Start();
-            moveVersion.Binds();
             BingBongSays.Start();
             noBonusStaminaFromJumps.Start();
             if (Chainloader.PluginInfos.ContainsKey("com.borealityy.peaktextchat"))
@@ -71,6 +70,7 @@ namespace TinyTweaks
             allElevators.Binds();
             removePromptNameOrGlow.Binds();
             AnimationOverride.Binds();
+            moveAscent.Binds();
         }
         public static void Notification(string message, string color = "FFFFFF", bool sound = false)
         {
