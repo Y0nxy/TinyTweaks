@@ -26,8 +26,8 @@ namespace TinyTweaks.Tweaks
         //static TMP_FontAsset defaultFont = null;
         static Dictionary<TextMeshProUGUI, TMP_FontAsset> defaultFonts = new Dictionary<TextMeshProUGUI, TMP_FontAsset>();
 
-        static TMP_FontAsset peakFont = null;
-        static ConfigEntry<float> fontSize;
+        //static TMP_FontAsset peakFont = null;
+        //static ConfigEntry<float> fontSize;
         //static ConfigEntry<TextAlignment> textAlignment;
         //static ConfigEntry<string> versionTextColor;
         static ConfigEntry<string> ascentTextColor;

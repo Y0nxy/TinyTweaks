@@ -108,6 +108,7 @@ namespace TinyTweaks
         }
         void Update()
         {
+            Shields.UpdateTimer();
             LetMeLEAVE.Update();
             if (GUIManager.instance != null && GUIManager.instance.windowBlockingInput) return; //no keypress when typing in chat or using menus
             Customizations.Update();
