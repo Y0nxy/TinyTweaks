@@ -36,7 +36,14 @@ namespace TinyTweaks.Tweaks
             {
                 if (info.Sender != __instance.photonView.Owner)
                 {
-                    tinyTweaks.Notification($"{info.Sender.NickName} tried to petrify player {__instance.name} by cheats!");
+                    if (info.Sender.IsMasterClient)
+                        tinyTweaks.log($"host:{info.Sender.NickName} tried to petrify player {__instance.name} by cheats!");
+                    else
+                    {
+                        tinyTweaks.Notification($"{info.Sender.NickName} tried to petrify player {__instance.name} by cheats!");
+                        tinyTweaks.log($"{info.Sender.NickName} tried to petrify player {__instance.name} by cheats!");
+                    }
+                
                 }
             }
             #endregion

@@ -172,6 +172,7 @@ namespace TinyTweaks.Tweaks
             var localCharacterView = character?.refs?.view;
             if (localCharacterView == null) return;
             localCharacterView.RPC("RPCA_PlayRemove", RpcTarget.All, emoteName, false);
+            character.refs.animator.Play(emoteName, 0, 0f);
             //Log.LogInfo($"played {emoteName} emote");
         }
     }
