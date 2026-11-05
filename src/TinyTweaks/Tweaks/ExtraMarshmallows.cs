@@ -227,7 +227,7 @@ namespace TinyTweaks.Tweaks
         static float CastToFloor(Vector3 spawnPosition)
         {
             RaycastHit floorhit;
-            if (Physics.Raycast(spawnPosition + Vector3.up * 5, Vector3.down, out floorhit, 10f))
+            if (Physics.Raycast(spawnPosition + Vector3.up * 5, Vector3.down, out floorhit, 10f, LayerMask.NameToLayer("Map")))
             {
                  return floorhit.point.y;
             }

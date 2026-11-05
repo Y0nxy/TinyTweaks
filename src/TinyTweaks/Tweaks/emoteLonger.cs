@@ -39,6 +39,14 @@ namespace TinyTweaks.Tweaks
                 if (c.input.movementInput.magnitude > 0.1f || c.input.jumpWasPressed || c.data.sinceGrounded > 0.2f) return;
                 __instance.sinceEmoteStart = 0;
             }
+
+            //show for me too
+            [HarmonyPatch(typeof(CharacterAnimations), nameof(CharacterAnimations.PlaySpecificAnimation))]
+            [HarmonyPrefix]
+            public static bool KeepEmoteVisible(CharacterAnimations __instance, string animationName)
+            {
+                return !(animationName == "Movement" && __instance.emoting);
+            }
         }
     }
 }

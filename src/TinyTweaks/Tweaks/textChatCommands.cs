@@ -56,20 +56,12 @@ namespace TinyTweaks.Tweaks
                 else if (cmd.Equals("/sit", StringComparison.OrdinalIgnoreCase))
                 {
                     emote("A_Scout_Emote_Sit");
-                    //var c = Character.localCharacter;
-                    //if (c == null) return false;
-                    //c.refs.view.RPC("RPCA_PlayRemove", RpcTarget.All, "A_Scout_Emote_Sit", false);
-                    //c.refs.animations.PlayEmote("A_Scout_Emote_Sit");
                     tinyTweaks.log("played sit emote");
                     return false;
                 }
                 else if (cmd.Equals("/ohno", StringComparison.OrdinalIgnoreCase))
                 {
                     emote("A_Scout_Emote_Panic");
-                    //var c = Character.localCharacter;
-                    //if (c == null) return false;
-                    //c.refs.view.RPC("RPCA_PlayRemove", RpcTarget.All, "A_Scout_Emote_Panic", false);
-                    //c.refs.animations.PlayEmote("A_Scout_Emote_Panic");
                     tinyTweaks.log("played oh no emote");
                     return false;
                 }
@@ -172,7 +164,6 @@ namespace TinyTweaks.Tweaks
             var localCharacterView = character?.refs?.view;
             if (localCharacterView == null) return;
             localCharacterView.RPC("RPCA_PlayRemove", RpcTarget.All, emoteName, false);
-            character.refs.animator.Play(emoteName, 0, 0f);
             //Log.LogInfo($"played {emoteName} emote");
         }
     }
