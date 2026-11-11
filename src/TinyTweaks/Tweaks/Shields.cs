@@ -30,9 +30,9 @@ namespace TinyTweaks.Tweaks
                 tinyTweaks.Notification("blocked stabbie stab!");
                 return false;
             }
-            [HarmonyPatch(typeof(CharacterAfflictions), "RPC_PetrifyInstantly")]
+            [HarmonyPatch(typeof(CharacterData), nameof(CharacterData.RPC_SyncPetrify))]
             [HarmonyPrefix]
-            static void blockPetrifyRequest(CharacterAfflictions __instance, bool killedByDagger, ref PhotonMessageInfo info)
+            static bool blockPetrifyRequest(CharacterData __instance, ref PhotonMessageInfo info)
             {
                 if (info.Sender != __instance.photonView.Owner)
                 {
@@ -42,9 +42,10 @@ namespace TinyTweaks.Tweaks
                     {
                         tinyTweaks.Notification($"{info.Sender.NickName} tried to petrify player {__instance.name} by cheats!");
                         tinyTweaks.log($"{info.Sender.NickName} tried to petrify player {__instance.name} by cheats!");
+                        return false;
                     }
-                
                 }
+                return true;
             }
             #endregion
             #region BlowGun Shield

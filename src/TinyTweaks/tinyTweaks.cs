@@ -5,7 +5,6 @@ using BepInEx.Logging;
 using HarmonyLib;
 using Photon.Pun;
 using System.Collections;
-using System.Reflection;
 using TinyTweaks.Tweaks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -50,6 +49,7 @@ namespace TinyTweaks
             }
             else allElevators.inAirport = false;
             TweaksObj.AddComponent<moveAscent>();
+            TweaksObj.AddComponent<PlayerCounter>();
         }
         private void StartTweaks()
         {
@@ -71,33 +71,26 @@ namespace TinyTweaks
             removePromptNameOrGlow.Binds();
             AnimationOverride.Binds();
             moveAscent.Binds();
+            PlayerCounter.Binds();
         }
         public static void Notification(string message, string color = "FFFFFF", bool sound = false)
         {
-            PlayerConnectionLog connectionLog = UnityEngine.Object.FindAnyObjectByType<PlayerConnectionLog>();
-            if (connectionLog == null)
+            log("Notification: " + message);
+            PlayerConnectionLog connectionLog = FindAnyObjectByType<PlayerConnectionLog>();
+            if (connectionLog == null) return;
+            string formattedMessage = $"<color=#{color}>{message}</color>";
+            connectionLog.AddMessage(formattedMessage);
+            if (connectionLog.sfxJoin != null && sound)
             {
-                return;
-            }
-            string formattedMessage = string.Concat(new string[] { "<color=#", color, ">", message, "</color>" });
-            MethodInfo addMessageMethod = typeof(PlayerConnectionLog).GetMethod("AddMessage", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (addMessageMethod != null)
-            {
-                addMessageMethod.Invoke(connectionLog, new object[] { formattedMessage });
-                if (connectionLog.sfxJoin != null && sound)
-                {
-                    connectionLog.sfxJoin.Play(default(Vector3));
-                    return;
-                }
-            }
-            else
-            {
-                Log.LogMessage("AddMessage method not found.");
+                connectionLog.sfxJoin.Play(default(Vector3));
             }
         }
-        public static void log(string message)
+        public static void log(string message, bool isError = false)
         {
-            Log.LogInfo(message);
+            if (isError)
+                Log.LogError(message);
+            else
+                Log.LogInfo(message);
         }
         public static void logMessage(string message)
         {
@@ -119,11 +112,11 @@ namespace TinyTweaks
             if (harmony != null)
             {
                 harmony.UnpatchSelf();
-                SceneManager.sceneLoaded -= OnSceneChanged;
-                if (TweaksObj != null)
-                    Destroy(TweaksObj);
-                log("Unloading mod " + Name);
             }
+            SceneManager.sceneLoaded -= OnSceneChanged;
+            if (TweaksObj != null)
+                Destroy(TweaksObj);
+            log("Unloading mod " + Name);
         }
 
         IEnumerator checkIsHostDelayed()
@@ -133,6 +126,7 @@ namespace TinyTweaks
                 log($"Host is {PhotonNetwork.MasterClient}");
                 yield break;
             }
+            ChangeRopeToRed.ropeAirport();
             log("Loading Basketball Aimbot!");
             TweaksObj.AddComponent<ItemAimbotFinder>();
         }

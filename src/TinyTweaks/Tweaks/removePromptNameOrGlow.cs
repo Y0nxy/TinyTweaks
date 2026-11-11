@@ -10,6 +10,9 @@ namespace TinyTweaks.Tweaks
         private static ConfigEntry<bool> removePickupText;
         private static ConfigEntry<bool> removePitonText;
         private static ConfigEntry<bool> removeRopeText;
+        private static ConfigEntry<bool> removeBoothText;
+        private static ConfigEntry<bool> removeLuggageText;
+        private static ConfigEntry<bool> removeAll;
 
         public static void Binds()
         {
@@ -17,6 +20,9 @@ namespace TinyTweaks.Tweaks
             removePickupText = tinyTweaks.config.Bind("Interactions", "Remove pickup text", false);
             removePitonText = tinyTweaks.config.Bind("Interactions", "Remove piton text", false);
             removeRopeText = tinyTweaks.config.Bind("Interactions", "Remove rope text", false);
+            removeBoothText = tinyTweaks.config.Bind("Interactions", "Remove booth text", false);
+            removeLuggageText = tinyTweaks.config.Bind("Interactions", "Remove Luggage text", false);
+            removeAll = tinyTweaks.config.Bind("Interactions", "Remove All", false);
         }
 
         [HarmonyPatch]
@@ -28,23 +34,36 @@ namespace TinyTweaks.Tweaks
             {
                 var hovered = Interaction.instance.currentHovered;
                 //return true;
-                if (hovered is RopeSegment && !removeRopeText.Value) return true;
-                if (hovered is ClimbHandle && !removePitonText.Value) return true;
-                if (hovered is not Item && hovered is not ClimbHandle && hovered is not RopeSegment) return true;
-                if (__instance.currentInteractable.UnityObjectExists<IInteractible>())
+                if ((removeAll.Value && hovered is not null) ||
+                    (hovered is RopeSegment && removeRopeText.Value)||
+                    (hovered is ClimbHandle && removePitonText.Value)||
+                    (removeBoothText.Value &&
+                        hovered is AirportCheckInKiosk ||
+                        hovered is AirportInviteFriendsKiosk ||
+                        hovered is AirportPhotoboothKiosk)||
+                    (hovered is Item) ||
+                    (hovered is Luggage && removeLuggageText.Value))
                 {
-                    __instance.currentInteractable.HoverExit();
+                    hide(__instance);
+                    return false;
                 }
-                __instance.currentInteractable = Interaction.instance.currentHovered;
-                if (__instance.currentInteractable.UnityObjectExists<IInteractible>())
-                {
-                    if (!removeGlowItem.Value)
-                        __instance.currentInteractable.HoverEnter();
-                }
-                if (!removePickupText.Value)
-                    __instance.RefreshInteractablePrompt();
-                return false;
+                return true;
             }
+        }
+        static void hide(GUIManager manager)
+        {
+            if (manager.currentInteractable.UnityObjectExists<IInteractible>())
+            {
+                manager.currentInteractable.HoverExit();
+            }
+            manager.currentInteractable = Interaction.instance.currentHovered;
+            if (manager.currentInteractable.UnityObjectExists<IInteractible>())
+            {
+                if (!removeGlowItem.Value)
+                    manager.currentInteractable.HoverEnter();
+            }
+            if (!removePickupText.Value)
+                manager.RefreshInteractablePrompt();
         }
     }
 }
