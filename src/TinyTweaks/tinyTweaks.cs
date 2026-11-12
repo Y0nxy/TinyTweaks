@@ -40,6 +40,10 @@ namespace TinyTweaks
                 LoadingScreenHandler.loading = false;
                 return;
             }
+            if (TweaksObj != null)
+            {
+                Destroy(TweaksObj);
+            }
             TweaksObj = new GameObject("Tweaks!");
             if (scene.name == "Airport")
             {
