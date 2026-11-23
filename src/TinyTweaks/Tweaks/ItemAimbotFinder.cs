@@ -1,8 +1,10 @@
 ﻿using BepInEx.Configuration;
 using HarmonyLib;
 using Photon.Pun;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static Zorro.ControllerSupport.Rumble.RumbleClip;
 
 namespace TinyTweaks.Tweaks
 {
@@ -47,9 +49,25 @@ namespace TinyTweaks.Tweaks
             {
                 //Fix Duping Basketballs
                 if (__instance.photonView.Owner != PhotonNetwork.MasterClient)
-                    __instance.photonView.TransferOwnership(PhotonNetwork.MasterClient);
+                {
+                    tinyTweaks.Instance.StartCoroutine(alwaysDeleteOnPickup(__instance, characterView));
+                    return false;
+                }
+                
                 return true;
             }
+        }
+
+        static IEnumerator alwaysDeleteOnPickup(Item item, PhotonView characterView)
+        {
+            if (item?.photonView == null || characterView == null)
+            {
+                tinyTweaks.log("item could not be picked up bc photonview is missing...");
+                yield break;
+            }
+            item.photonView.TransferOwnership(PhotonNetwork.MasterClient);
+            yield return new WaitUntil(() => item.photonView.IsMine);
+            item.RequestPickup(characterView);
         }
         private void Update()
         {

@@ -7,16 +7,20 @@ namespace TinyTweaks.Tweaks
 {
     internal class Shields
     {
-        static ConfigEntry<bool> daggerShield;
+        internal static ConfigEntry<bool> daggerShield;
         static ConfigEntry<bool> blowgunShield;
         static ConfigEntry<bool> rescueClawShield;
+        static ConfigEntry<bool> kickShield;
         static float timeSinceLastClawOnME = 999;
+        static float timeSinceLastKick = 999;
+        static int KickerActorNum;
 
         public static void Start()
         {
             daggerShield = tinyTweaks.config.Bind("Shields", "dagger Shield", false);
             blowgunShield = tinyTweaks.config.Bind("Shields", "blowgun Shield", false);
             rescueClawShield = tinyTweaks.config.Bind("Shields", "rescue claw Shield", false);
+            kickShield = tinyTweaks.config.Bind("Shields", "kick Shield", false);
         }
         [HarmonyPatch]
         static class shieldPatches
@@ -46,6 +50,24 @@ namespace TinyTweaks.Tweaks
                     }
                 }
                 return true;
+            }
+            //can't attack if shielded
+            [HarmonyPatch(typeof(Item), nameof(Item.isUsingSecondary), MethodType.Setter)]
+            [HarmonyPostfix]
+            static void skipWithShield(Item __instance, bool value)
+            {
+                if (!__instance.UIData.itemName.Contains("Dagger") ) return;
+                if (value == false) return;
+
+                if (daggerShield.Value)
+                {
+                    __instance.usingTimePrimary = -1;
+                    tinyTweaks.Notification("You have dagger shield! you can't stab others!", sound: true);
+                }
+                else if (__instance.usingTimePrimary < 0)
+                {
+                    __instance.usingTimePrimary = .7f;
+                }
             }
             #endregion
             #region BlowGun Shield
@@ -97,13 +119,47 @@ namespace TinyTweaks.Tweaks
             [HarmonyPrefix]
             static bool blockFall(Character __instance)//, ref PhotonMessageInfo info)
             {
-                if (!rescueClawShield.Value || !__instance.IsLocal) return true;
-                if (timeSinceLastClawOnME < 1) return false;
+                if (!__instance.IsLocal) return true;
+                if (!rescueClawShield.Value && !kickShield.Value) return true;
+                if (timeSinceLastClawOnME < 1 || timeSinceLastKick < 1) return false;
+                __instance.photonView.RPC("RPCA_UnFall", RpcTarget.All);
                 return true;
             }
 
             #endregion
+            #region Kick Shield
+            [HarmonyPatch(typeof(CharacterGrabbing), "RPCA_KickImpact")]
+            [HarmonyPrefix]
+            static bool nokickforall(CharacterGrabbing __instance)
+            {
+                if (!kickShield.Value) return true;
+                if (__instance.character.IsLocal)
+                {
+                    //tinyTweaks.logMessage("Local Kicked? " + __instance.character.IsLocal);
+                    return true;
+                }
+                timeSinceLastKick = 0;
+                var pv = __instance?.character?.photonView;
+                if (pv != null)
+                    KickerActorNum = pv.OwnerActorNr;
+                //tinyTweaks.logMessage($"{__instance.character.photonView.Owner.NickName} tried kicking.");
+                return true;
+            }
+            [HarmonyPatch(typeof(Character), "RPCA_AddForceAtPosition")]
+            [HarmonyPrefix]
+            static bool nokickForce(Character __instance, ref PhotonMessageInfo info)
+            {
+                if (!__instance.IsLocal || !kickShield.Value) return true;
+                if (info.Sender.ActorNumber == KickerActorNum && timeSinceLastKick < 2.5f) return false;
+                return true;
+            }
+            #endregion
+
         }
-        public static void UpdateTimer() => timeSinceLastClawOnME += Time.deltaTime;
+        public static void UpdateTimer()
+        {
+            timeSinceLastClawOnME += Time.deltaTime;
+            timeSinceLastKick += Time.deltaTime;
+        }
     }
 }

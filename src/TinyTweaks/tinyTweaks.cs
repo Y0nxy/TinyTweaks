@@ -27,7 +27,7 @@ namespace TinyTweaks
             Log = Logger;
             config = this.Config;
             SceneManager.sceneLoaded += OnSceneChanged;
-            harmony = new Harmony("TinyTweaks!");
+            harmony = new Harmony(Id);
             StartTweaks();
             harmony.PatchAll();
             Log.LogInfo($"Plugin {Name} is loaded!");
@@ -125,7 +125,8 @@ namespace TinyTweaks
 
         IEnumerator checkIsHostDelayed()
         {
-            yield return new WaitForSeconds(10);
+            yield return new WaitForSeconds(5);//buffer idk
+            yield return new WaitUntil(() => PhotonNetwork.CurrentRoom != null && PhotonNetwork.IsConnectedAndReady);
             if (!PhotonNetwork.IsMasterClient) {
                 log($"Host is {PhotonNetwork.MasterClient}");
                 yield break;
