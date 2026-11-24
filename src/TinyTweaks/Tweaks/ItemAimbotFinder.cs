@@ -48,13 +48,11 @@ namespace TinyTweaks.Tweaks
             private static bool onRequestPickup(Item __instance, PhotonView characterView)
             {
                 //Fix Duping Basketballs
-                if (__instance.photonView.Owner != PhotonNetwork.MasterClient)
-                {
-                    tinyTweaks.Instance.StartCoroutine(alwaysDeleteOnPickup(__instance, characterView));
-                    return false;
-                }
-                
-                return true;
+                if (!PhotonNetwork.IsMasterClient) return false;
+                if (!__instance.photonView.IsMine) return true;
+
+                tinyTweaks.Instance.StartCoroutine(alwaysDeleteOnPickup(__instance, characterView));
+                return false;
             }
         }
 

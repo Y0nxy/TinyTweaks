@@ -226,11 +226,32 @@ namespace TinyTweaks.Tweaks
         }
         static float CastToFloor(Vector3 spawnPosition)
         {
-            RaycastHit floorhit;
-            if (Physics.Raycast(spawnPosition + Vector3.up * 5, Vector3.down, out floorhit, 10f, LayerMask.NameToLayer("Map")))
+
+            //if hit item(marshmallow before)
+            Ray ray = new Ray(spawnPosition + Vector3.up * 5f, Vector2.down);
+            float maxDist = 10f;
+            if (Physics.Raycast(ray, out RaycastHit hitItem, maxDist))
             {
-                 return floorhit.point.y;
+                var item = hitItem.transform.GetComponentInParent<Item>();
+                if (item != null && item.rig.isKinematic == true)
+                {
+                    //tinyTweaks.logMessage("Hit Item");
+                    return hitItem.point.y + 0.05f;
+                }
             }
+            int mapLayer = LayerMask.NameToLayer("Map");
+            int terrainLayer = LayerMask.NameToLayer("Terrain");
+
+            int mask = 0;
+            if (mapLayer != -1) mask |= 1 << mapLayer;
+            if (terrainLayer != -1) mask |= 1 << terrainLayer;
+
+            if (mask != 0 && Physics.Raycast(ray, out RaycastHit floorHit, maxDist, mask, QueryTriggerInteraction.Ignore))
+            {
+                //tinyTweaks.logMessage("Spawned on Map");
+                return floorHit.point.y;
+            }
+            tinyTweaks.log("NOT Spawned on Map or on Item");
             return spawnPosition.y;
         }
     }

@@ -28,7 +28,7 @@ namespace TinyTweaks.Tweaks
         public static void Binds()
         {
             show = tinyTweaks.config.Bind("PlayerCounter", "show", true);
-            xPos = tinyTweaks.config.Bind("PlayerCounter", "X Position", 1920f, new ConfigDescription("", new AcceptableValueRange<float>(-1920f, 1920f)));
+            xPos = tinyTweaks.config.Bind("PlayerCounter", "X Position", 928f, new ConfigDescription("", new AcceptableValueRange<float>(-1920f, 1920f)));
             yPos = tinyTweaks.config.Bind("PlayerCounter", "Y Position", 600f, new ConfigDescription("", new AcceptableValueRange<float>(-600, 600f)));
             color = tinyTweaks.config.Bind("PlayerCounter", "Color", "FFFFFF");
             size = tinyTweaks.config.Bind("PlayerCounter", "Size", 30f, new ConfigDescription("", new AcceptableValueRange<float>(0, 300f)));
@@ -135,7 +135,7 @@ namespace TinyTweaks.Tweaks
 
             const float overhang = 0.3f;
 
-            float limitX = canvasRect.rect.width / 2f - tmpro.preferredWidth * (0.5f - overhang);
+            float limitX = canvasRect.rect.width / 2f - tmpro.preferredWidth * (0.5f);
             float limitY = canvasRect.rect.height / 2f - tmpro.preferredHeight * (0.5f - overhang);
             rt.anchoredPosition = new Vector2(
                 Mathf.Clamp(xPos.Value, -limitX, limitX),
