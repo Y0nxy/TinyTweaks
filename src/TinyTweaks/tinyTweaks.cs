@@ -110,6 +110,7 @@ namespace TinyTweaks
             if (GUIManager.instance != null && GUIManager.instance.windowBlockingInput) return; //no keypress when typing in chat or using menus
             Customizations.Update();
             AnimationOverride.Update();
+            //ExtraMarshmallows.Keybinds();
         }
         void OnDestroy()
         {
@@ -134,6 +135,12 @@ namespace TinyTweaks
             ChangeRopeToRed.ropeAirport();
             log("Loading Basketball Aimbot!");
             TweaksObj.AddComponent<ItemAimbotFinder>();
+        }
+        public static IEnumerator GetOwnershipAndDestroy(PhotonView pv)
+        {
+            pv.RequestOwnership();
+            yield return new WaitUntil(() => pv.IsMine);
+            PhotonNetwork.Destroy(pv);
         }
     }
 }

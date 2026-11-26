@@ -1,7 +1,6 @@
 ﻿using BepInEx.Configuration;
 using HarmonyLib;
 using Photon.Pun;
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -22,10 +21,12 @@ namespace TinyTweaks.Tweaks
 
         //other stuff
         public static Campfire nextCampfire;
-        static List<GameObject> marshmallows = new List<GameObject>();
+        static Dictionary<GameObject, bool> marshmallows = new Dictionary<GameObject, bool>();
         static Dictionary<PhotonView, int> charactersThatPickedUp = new Dictionary<PhotonView, int>();
         static float radius = 2f;
         static int playerCount => PhotonNetwork.CurrentRoom.PlayerCount;
+        //static int playerCount => PhotonNetwork.CurrentRoom.PlayerCount + _TESTOFFSET;
+        //static int _TESTOFFSET = 0;
         static Vector3 originPoint => nextCampfire.transform.position;
         static int marshmallowsTaken = 0;
         static bool isMasterAndEnabled => PhotonNetwork.IsMasterClient && enableExtraMarshmallows.Value;
@@ -45,6 +46,7 @@ namespace TinyTweaks.Tweaks
             cheatMallows = config.Bind("Campfire", "Cheat mallows", 0, new ConfigDescription("0 disabled - to 250", new AcceptableValueRange<int>(0, 250)));
             isCookedMarshmallow = config.Bind("Campfire", "Cook Marshmallows", false);
         }
+        #region Patches
         [HarmonyPatch(typeof(MapHandler), "SpawnCampfireItems")]
         private class SetCampfire
         {
@@ -111,14 +113,14 @@ namespace TinyTweaks.Tweaks
             [HarmonyPrefix]
             private static bool onRequestPickup(Item __instance, PhotonView characterView)
             {
-                if (!PhotonNetwork.IsMasterClient|| !enableExtraMarshmallows.Value) return true;
-                if (!marshmallows.Contains(__instance.gameObject)) return true;
+                if (!isMasterAndEnabled) return true;
+                if (!marshmallows.TryGetValue(__instance.gameObject, out bool protect) || !protect) return true;
                 if (charactersThatPickedUp.ContainsKey(characterView))
                 {
                     if (extraMallowsPerScout.Value == 0 || charactersThatPickedUp[characterView] >= extraMallowsPerScout.Value)
                     {
                         tinyTweaks.log(characterView.name + " tried taking another Marshmallow! Unbelieveable...");
-                        __instance.view.RPC("DenyPickupRPC", characterView.Owner, Array.Empty<object>());
+                        __instance.view.RPC("DenyPickupRPC", characterView.Owner);
                         return false;
                     }
                 }
@@ -127,6 +129,7 @@ namespace TinyTweaks.Tweaks
                 else
                     charactersThatPickedUp[characterView]++;
                 marshmallows.Remove(__instance.gameObject);
+                marshmallowsTaken++;
                 return true;
             }
             [HarmonyPatch("SetKinematicRPC")]
@@ -134,34 +137,46 @@ namespace TinyTweaks.Tweaks
             static void MarshmallowStandInPlace(Item __instance, bool value, Vector3 position, Quaternion rotation)
             {
                 if (!isMasterAndEnabled) return;
-                if (marshmallows.Contains(__instance.gameObject))
+                if (marshmallows.ContainsKey(__instance.gameObject))
                 {
                     if (!value)
                         __instance.SetKinematicNetworked(true,__instance.transform.position, __instance.transform.rotation);
                 }
             }
         }
-
+        #endregion
         static void RefreshMarshmallows()
         {
             if (nextCampfire == null) return;
             Vector3 originPoint = nextCampfire.transform.position;
-            foreach (GameObject obj in marshmallows)
+            foreach (GameObject obj in marshmallows.Keys)
             {
                 if (obj == null)
                 {
-                    marshmallowsTaken++;
                     continue;
                 }
                 PhotonView pv = obj.GetPhotonView();
-                if (pv == null) continue;
-                if (!pv.IsMine) pv.RequestOwnership();
-                PhotonNetwork.Destroy(obj);
+                if (pv == null)
+                {
+                    tinyTweaks.log("pv is null");
+                    continue;
+                }
+                if (pv.IsMine)
+                {
+                    PhotonNetwork.Destroy(pv.gameObject);
+                    continue;
+                }
+                tinyTweaks.GetOwnershipAndDestroy(pv);
             }
             marshmallows.Clear();
             tinyTweaks.log($"RefreshMarshmallows Called! Taken: {marshmallowsTaken}/{playerCount}");
             int partOfCircle = 0;
-            int cap = extraMallowsPerScout.Value == 0 ? playerCount - marshmallowsTaken : playerCount * extraMallowsPerScout.Value - marshmallowsTaken;
+            //int cap = extraMallowsPerScout.Value == 0 ? playerCount - marshmallowsTaken : playerCount * extraMallowsPerScout.Value - marshmallowsTaken;
+            int cap = playerCount - marshmallowsTaken;
+            if (extraMallowsPerScout.Value > 0)
+                cap = Mathf.CeilToInt(playerCount - marshmallowsTaken/extraMallowsPerScout.Value);
+            //          2 - 3/4 = 1.25     2*4 = 8
+            //          1 = 4, 2 
             for (int i = 0; i < cap; i++)
             {
                 SpawnMarshmallow(i);
@@ -192,15 +207,47 @@ namespace TinyTweaks.Tweaks
             // We force Y to be 0 so they don't tilt up/down if your campfire is on a slope.
             directionToCenter.y = 0;
             Quaternion lookRotation = Quaternion.LookRotation(directionToCenter) * Quaternion.Euler(0, -90, 0);
+            if (!isProtected || extraMallowsPerScout.Value == 0)
+            {
+                var itemObj = SpawnMallowItem(spawnPosition, lookRotation);
+                if (isProtected)
+                    marshmallows.Add(itemObj, true);
+                else
+                    marshmallows.Add(itemObj, false);
+            }
+            //
+            if (isProtected && extraMallowsPerScout.Value > 0)
+            {
+                //          if currentMarshmallows < maxMarshmallows - taken 
+                int cap = playerCount * extraMallowsPerScout.Value - marshmallowsTaken; // 2*3 -3 = 3
+                int currentAmount = marshmallows.Count; // 0-> 3 -> stop
+
+                //cap = currentAmount + extraMallowsPerScout.Value > cap ? cap - currentAmount : extraMallowsPerScout.Value;
+                cap = cap - currentAmount; // 3 - 0 = 3
+                if (cap > extraMallowsPerScout.Value) //3 >3 false, 4>3->3
+                    cap = extraMallowsPerScout.Value; // false 
+                //cap = extraMallowsPerScout.Value; 
+                for (int mallow = 0; mallow < cap; mallow++)
+                {
+                    marshmallows.Add(SpawnMallowItem(spawnPosition, lookRotation), true);
+                }
+
+            }
+        }
+        static GameObject SpawnMallowItem(Vector3 spawnPosition, Quaternion lookRotation)
+        {
+
             string itemToSpawn = "0_Items/Marshmallow";
             if (UnityEngine.Random.value <= hotdogPercent.Value / 100) itemToSpawn = "0_Items/Glizzy";
+            spawnPosition.y = CastToFloor(spawnPosition);
             GameObject itemObj = PhotonNetwork.InstantiateRoomObject(itemToSpawn, spawnPosition, lookRotation);
-            var item = itemObj.GetComponent<Item>();
-            if (isCookedMarshmallow.Value)
-                item.photonView.RPC("SetCookedAmountRPC", RpcTarget.All, 1);
-            if (item != null) item.SetKinematicNetworked(true);
-            if (isProtected)
-                marshmallows.Add(itemObj);
+            if (itemObj.TryGetComponent<Item>(out Item item))
+            {
+                if (isCookedMarshmallow.Value)
+                    item.photonView.RPC("SetCookedAmountRPC", RpcTarget.All, 1);
+                item.SetKinematicNetworked(true);
+            }
+            return itemObj;
         }
         static void SpawnExtraBackpacks(int partOfCircle)
         {
@@ -226,7 +273,6 @@ namespace TinyTweaks.Tweaks
         }
         static float CastToFloor(Vector3 spawnPosition)
         {
-
             //if hit item(marshmallow before)
             Ray ray = new Ray(spawnPosition + Vector3.up * 5f, Vector2.down);
             float maxDist = 10f;
@@ -254,5 +300,25 @@ namespace TinyTweaks.Tweaks
             tinyTweaks.log("NOT Spawned on Map or on Item");
             return spawnPosition.y;
         }
+        //public static void Keybinds()
+        //{
+        //    bool pressed = false;
+        //    if (Input.GetKeyDown(KeyCode.LeftArrow))
+        //    {
+        //        _TESTOFFSET++;
+        //        pressed = true;
+        //    }
+        //    if (Input.GetKeyDown(KeyCode.RightArrow))
+        //    {
+        //        _TESTOFFSET--;
+        //        pressed = true;
+        //    }
+        //    if (pressed)
+        //    {
+        //        tinyTweaks.logMessage($"playercount+ offset: {playerCount}\n" +
+        //            $"marshmallowsTaken: {marshmallowsTaken}, count-taken = {playerCount-marshmallowsTaken}");
+        //        RefreshMarshmallows();
+        //    }
+        //}
     }
 }

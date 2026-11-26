@@ -49,7 +49,7 @@ namespace TinyTweaks.Tweaks
             {
                 //Fix Duping Basketballs
                 if (!PhotonNetwork.IsMasterClient) return false;
-                if (!__instance.photonView.IsMine) return true;
+                if (__instance.photonView.IsMine) return true;
 
                 tinyTweaks.Instance.StartCoroutine(alwaysDeleteOnPickup(__instance, characterView));
                 return false;
